@@ -1,0 +1,25 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // デバッグ設定の名称
+            "name": "Launch local file",
+            // デバッグ種別を指定（chrome/node/monoなど）
+            "type": "chrome",
+            // lanunchまたはattachを指定
+            "request": "launch",
+            // 読み込むHTMLファイルを指定（プロジェクトからのパスを指定）
+            "file": "${workspaceRoot}/index.html"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "localhost に対して Chrome を起動",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}

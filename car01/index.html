@@ -1,0 +1,37 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Toys for Control Education  &mdash; Electric Car</title>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width, height=device-height"
+  />
+  <link rel="stylesheet" href="lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="lib/codemirror/theme/cobalt.css">
+  <script src="lib/codemirror/codemirror.js"></script>
+  <script src="lib/codemirror/mode/javascript.js"></script>
+  <script src="lib/rawinflate.js"></script>
+  <script src="lib/rawdeflate.js"></script>
+  <link href="css/toy.css" rel="stylesheet">
+</head>
+
+<body>
+  <div id="editor"></div>
+  <div id="toolbar">
+    <div class="button with-switch" id="spawn">
+      <label class="switch" onclick="event.stopPropagation();">
+        <input type="checkbox" id="autospawn">
+        <div class="slider"></div>
+      </label>
+      <div>spawn</div>
+    </div>
+  </div>
+  <div id="popup"></div>
+  <div id="status"></div>
+  <div id="info"></div>
+  <script src="lib/planck-with-testbed.js"></script>
+  <script src="default.js"></script>
+  <script src="editor.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
+<html>

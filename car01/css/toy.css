@@ -1,0 +1,251 @@
+html,
+body {
+    height: 100%;
+    margin: 0px;
+    overflow: hidden;
+}
+
+a {
+    color: #ffffff;
+}
+
+h1 {
+    font-size: 30px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+h2 {
+    font-size: 20px;
+    margin-top: 0px;
+}
+
+.button {
+    font-family: Consolas;
+    font-size: 18px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(0, 255, 255, 0.9);
+    border: 2px solid rgba(0, 255, 255, 0.9);
+    background-color: transparent;
+    margin: 2px;
+    padding: 3px 10px;
+    cursor: pointer;
+}
+
+.button:hover {
+    color: rgb(255, 255, 255);
+    background-color: rgba(0, 255, 255, 0.2);
+}
+
+.button path {
+    stroke: rgb(80, 80, 80);
+}
+
+.button:hover path {
+    stroke: rgb(235, 235, 235);
+}
+
+#editor {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#editor .CodeMirror {
+    height: 100%;
+    font-family: 'Consolas';
+    font-size: 18px;
+}
+
+#editor .CodeMirror-scroll {
+    height: 100%;
+}
+
+/* #editor .CodeMirror div.CodeMirror-selected {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+#editor .CodeMirror-focused div.CodeMirror-selected {
+    background: rgba(0, 0, 255, 0.1);
+}
+
+#editor .CodeMirror .errorLine {
+    background: rgba(255, 0, 0, 0.25);
+}
+
+#editor .CodeMirror .esprima-error {
+    color: #f00;
+    text-align: right;
+    padding: 0px 20px;
+} */
+
+#toolbar {
+    position: absolute;
+    top: 15px;
+    right: 30px;
+    text-align: right;
+    display: flex;
+    z-index: 10;
+    /* CodeMirror sets z-index */
+}
+
+#popup {
+    position: absolute;
+    color: rgba(0, 255, 255, 0.9);
+    padding: 20px 20px 20px 20px;
+    background-color: transparent;
+    border: solid 2px rgba(0, 255, 255, 0.9);
+    z-index: 20;
+    /* CodeMirror sets z-index */
+}
+
+body {
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+#popup {
+    background: rgba(32, 32, 32, 0.7);
+}
+
+.dark .about,
+.dark .hint {
+    background: rgba(32, 32, 32, 0.7);
+}
+
+.about {
+    right: 0.5em;
+    bottom: 0.5em;
+}
+
+.hint {
+    left: 0.5em;
+    bottom: 0.5em;
+}
+
+.loading {
+    margin: 10% 10%;
+    font-size: xx-large;
+    position: absolute;
+}
+
+a {
+    text-decoration: none;
+    color: rgba(180, 255, 255, 0.9);
+    ;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.dark {
+    color: #ccc;
+    background: #222;
+}
+
+.dark a {
+    color: #fff;
+}
+
+/* The switch - the box around the slider */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+/* Hide default HTML checkbox */
+
+.switch input {
+    display: none;
+}
+
+/* The slider */
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: transparent;
+    border: solid 1px rgba(0, 255, 255, 0.9);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 2px;
+    background: transparent;
+    border: 1px solid rgba(0, 255, 255, 0.9);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: rgba(0, 127, 127, 0.9);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px rgba(0, 127, 127, 0.9);
+}
+
+input:checked+.slider:before {
+    -webkit-transform: translateX(18px);
+    -ms-transform: translateX(18px);
+    transform: translateX(18px);
+}
+
+.with-switch{
+    display:flex;
+    align-items: center;
+}
+.with-switch div,
+.with-switch label {
+}
+
+.with-switch div{
+    padding-left:8px;
+}
+#info {
+    position: absolute;
+    bottom: 2px;
+    color: #fff;
+    font-family: Consolas;
+    font-size: 20px;
+}
+
+#status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    color: #fff;
+    font-family: Consolas;
+    font-size: 20px;
+}
+
+input {
+    background-color: inherit;
+    color:inherit;
+    font: inherit;
+    border: 0;
+}
+
+input :focus{
+    border:0;
+}
+
+input::selection{
+    background:rgba(0,255,255,0.9);
+    color: rgba(0,127,127,0.9);
+}
