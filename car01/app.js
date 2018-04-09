@@ -50,25 +50,35 @@ planck.testbed('Car', function (testbed) {
     var k = 0; // time count
 
     function spawn(props) {
-        const wheelFD = {
-            density: 0.01,
-            friction: 50
-        };
+
         // wheel spring settings
         const HZ = 5;
         const ZETA = 3;
         const SPEED = 50.0;
 
-        let car = Object.assign({}, props);
+        let car = Object.assign({
+            x0: 0,
+            y0: 0,
+            v0: 0,
+            filterGroupIndex: 0
+        }, props);
+
         car.ud = 0;
         car.t0 = k / 60;
 
+
         car.body = world.createDynamicBody(Vec2(0.0, 1.0));
-        let fx1 = car.body.createFixture(pl.Box(0.1, 0.1, Vec2(1.4, -0.6)), 4.0);
+        let fx1 = car.body.createFixture(pl.Box(0.1, 0.1, Vec2(1.4, -0.6)), {
+            density: 4.0,
+            filterGroupIndex: car.filterGroupIndex
+        });
         fx1.render = {
             stroke: 'transparent'
         };
-        let fx2 = car.body.createFixture(pl.Box(0.1, 0.1, Vec2(-1.5, -0.6)), 2.0);
+        let fx2 = car.body.createFixture(pl.Box(0.1, 0.1, Vec2(-1.5, -0.6)), {
+            density: 2.0,
+            filterGroupIndex: car.filterGroupIndex
+        });
         fx2.render = {
             stroke: 'transparent'
         };
@@ -79,10 +89,18 @@ planck.testbed('Car', function (testbed) {
             Vec2(0.0, 0.9),
             Vec2(-1.15, 0.9),
             Vec2(-1.5, 0.2)
-        ]), 0.01);
+        ]), {
+            density: 0.01,
+            filterGroupIndex: car.filterGroupIndex
+        });
 
         car.body.setLinearDamping(0.4);
 
+        const wheelFD = {
+            density: 0.01,
+            friction: 50,
+            filterGroupIndex: car.filterGroupIndex
+        };
         car.wheelBack = world.createDynamicBody(Vec2(-1.0, 0.35));
         car.wheelBack.createFixture(pl.Circle(0.4), wheelFD);
         car.wheelFront = world.createDynamicBody(Vec2(1.0, 0.35));
@@ -200,7 +218,7 @@ planck.testbed('Car', function (testbed) {
         }
         testbed.status('x: ' + testbed.x.toFixed(0) + ', y: ' + testbed.y.toFixed(0) + ', vh: ' + testbed.height.toFixed(2));
     };
-    testbed.info('ESC: Toggle Editor/Player, ↑↓←→: Move view, Z/X: Zoom in/out');
+    testbed.info('ESC: Toggle Editor/Player, ↑↓←→: Move, Z/X: Zoom');
 
     let buttonSpawn = document.getElementById('spawn');
     let checkbox = document.getElementById('autospawn');

@@ -162,7 +162,7 @@ planck.testbed = function(opts, callback) {
                     ctx.save();
                     ctx.translate(p.x, p.y)
                     ctx.scale(0.1,-0.1);
-                    ctx.font='1em Consolas';
+                    ctx.font='1em Fira Code';
                     ctx.textAlign='center';
                     ctx.fillText(text,0,0);
                     ctx.restore();

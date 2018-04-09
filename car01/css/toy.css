@@ -21,7 +21,7 @@ h2 {
 }
 
 .button {
-    font-family: Consolas;
+    font-family: 'Fira Code', Consolas, monospace;
     font-size: 18px;
     text-transform: uppercase;
     text-decoration: none;
@@ -54,7 +54,9 @@ h2 {
 
 #editor .CodeMirror {
     height: 100%;
-    font-family: 'Consolas';
+    font-family:'Fira Code', 'Consolas', monospace;
+    font-feature-settings: "calt" 1;
+    font-variant-ligatures: contextual;
     font-size: 18px;
 }
 
@@ -154,7 +156,7 @@ a:hover {
 .switch {
     position: relative;
     display: inline-block;
-    width: 40px;
+    width: 35px;
     height: 20px;
 }
 
@@ -201,9 +203,9 @@ input:focus+.slider {
 }
 
 input:checked+.slider:before {
-    -webkit-transform: translateX(18px);
-    -ms-transform: translateX(18px);
-    transform: translateX(18px);
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
 }
 
 .with-switch{
@@ -221,7 +223,7 @@ input:checked+.slider:before {
     position: absolute;
     bottom: 2px;
     color: #fff;
-    font-family: Consolas;
+    font-family: 'Fira Code', Consolas, monospace;
     font-size: 20px;
 }
 
@@ -230,7 +232,7 @@ input:checked+.slider:before {
     bottom: 2px;
     right: 2px;
     color: #fff;
-    font-family: Consolas;
+    font-family: 'Fira Code', Consolas, monospace;
     font-size: 20px;
 }
 
