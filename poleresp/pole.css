@@ -1,0 +1,51 @@
+body, html{
+  height:100%;
+  overflow: hidden;
+}
+.container-fluid{
+  display:flex;
+  flex-direction: row;
+}
+input{
+  width:100%;
+}
+#polepane{
+  flex:0.5 0 0;
+  overflow:hidden;
+  padding:10px;
+  height:100vh;
+}
+#wrap-polemap{
+  height:100vh;
+
+}
+#wrap-resp{
+  height:100vh;  
+}
+#resppane{
+  height:100vh;
+  padding:0;
+  flex:1 0 0;
+  overflow:hidden;
+}
+#resp{
+  height:100%;
+  width:100%;
+}
+label{
+  display: block;
+  margin-top:1em;
+}
+#tf,#params{
+  position:absolute;
+  pointer-events: none;
+  font-size:28px;
+}
+
+#tf{
+  right:0;
+}
+#params{
+  right:0;
+  bottom:0;
+}

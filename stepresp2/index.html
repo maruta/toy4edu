@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Step response of second order system</title>
+
+    <link rel="stylesheet" href="../lib/katex/katex.min.css">
+    <script src="../lib/katex/katex.min.js"></script>
+    <link href="stepresp.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid" style="height:100%">
+        <div class="infopane">
+            <p id="tf">
+
+            </p>
+            <label for="inp-k">
+                <span>Gain</span>
+                <span id="label-K"></span>
+            </label>
+            <input type="range" id="inp-K" value="100" min="0" max="200">
+
+            <label for="inp-w"> 
+                <span>Natural Frequency</span>
+                <span id="label-w"></span>        
+            </label>
+            <input type="range" id="inp-w" value="0" min="-100" max="150">
+            <label for="inp-z"> 
+                    <span>Damping Ratio</span>
+            <span id="label-z"></span>
+            </label>
+            <input type="range" id="inp-z" value="50" min="0" max="200">
+        </div>
+        <div class="cell view" id="wrapper">
+            <canvas id="resp">
+            </canvas>
+        </div>
+    </div>
+    <script src="../lib/jquery-3.3.1.min.js"></script>
+    <script>
+        let wrapper = document.getElementById('wrapper');
+        let canvas = document.getElementById('resp');
+        canvas.height = wrapper.clientHeight * 2;
+        canvas.width = wrapper.clientWidth * 2;
+        let height = canvas.height,
+            width = canvas.width;
+
+        let ctx = canvas.getContext("2d");
+
+        function update() {
+            let K = $('#inp-K').val() * 0.01;
+            let w = Math.pow(10, $('#inp-w').val() * 0.01);
+            let z = Math.pow($('#inp-z').val() * 0.01, 2);
+            katex.render("K=" + K.toFixed(2), $('#label-K').get(0));
+            katex.render("\\omega_{\\mathrm{n}}=" + w.toFixed(2), $('#label-w').get(0));
+            katex.render("\\zeta=" + z.toFixed(3), $('#label-z').get(0));
+
+            katex.render(
+                `
+                    \\begin{aligned}
+                        G(s)&=\\frac{K\\omega_{\\mathrm{n}}^2}{s^2+2\\zeta\\omega_{\\mathrm{n}}s+\\omega_{\\mathrm{n}}^2}\\\\
+                            &=\\frac{${(K*w*w).toFixed(3)}}{s^2+${(2*z*w).toFixed(3)}s+${(w*w).toFixed(3)}}
+                    \\end{aligned}
+                    `,
+                document.getElementById('tf'), {
+                    displayMode: true
+                });
+
+            const tf = 15,
+                t0x = 100,
+                tfx = Math.ceil(width - 50),
+                y0y = Math.floor(height - 100),
+                yf = 2,
+                yfy = 50;
+            let st = function (t) {
+                return t * (tfx - t0x) / tf + t0x;
+            }
+            let sti = function (tx) {
+                return tf * (tx - t0x) / (tfx - t0x);
+            }
+            let sy = function (y) {
+                return y * (yfy - y0y) / yf + y0y;
+            }
+            let y = function (t) {
+                if (z < 1) {
+                    const sz = Math.sqrt(1.0 - z * z);
+                    const th = Math.atan2(sz, z);
+                    return K * (1 - 1 / sz * Math.exp(-z * w * t) * Math.sin(w * sz * t + th));
+                } else if (z == 1) {
+                    return K * (1 - Math.exp(-w * z * t) * (1 + w * t));
+                } else {
+                    const sz = Math.sqrt(z * z - 1.0);
+                    const a = (-z + sz) * w;
+                    const b = (-z - sz) * w;
+                    return K * (1 + 1 / (a - b) * (b * Math.exp(a * t) - a * Math.exp(b * t)));
+                }
+            }
+
+            ctx.clearRect(0, 0, width, height);
+            // draw grid
+            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(t0x, y0y, tfx - t0x, yfy - y0y);
+            ctx.font = "40pt Meiryo";
+            ctx.textBaseline = "top";
+            ctx.textAlign = "center";
+            for (var t = 0; t <= tf; t = t + 1) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgb(200,200,200)';
+                ctx.moveTo(st(t), sy(yf));
+                ctx.lineTo(st(t), sy(0));
+                ctx.stroke();
+                ctx.fillText(t, st(t), sy(0));
+            }
+            ctx.fillText('t', st(tf / 2), sy(0) + 25);
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.moveTo(st(0), sy(yf));
+            ctx.lineTo(st(0), sy(0));
+            ctx.fillText(0, st(0), sy(0));
+            ctx.stroke();
+
+            ctx.textBaseline = "middle";
+            ctx.textAlign = "right";
+            for (let y = 0; y <= yf; y = y + 0.5) {
+                if (parseInt(y * 10) == 0) {
+                    ctx.strokeStyle = 'rgb(0,0,0)';
+                } else if (parseInt(y * 10) == 10) {
+                    ctx.strokeStyle = 'rgb(255,0,0)';
+                } else {
+                    ctx.strokeStyle = 'rgb(200,200,200)';
+                }
+                ctx.beginPath();
+                ctx.moveTo(st(0), sy(y));
+                ctx.lineTo(st(tf), sy(y));
+                ctx.fillText(y, st(0) - 2, sy(y))
+                ctx.stroke();
+            }
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.moveTo(st(tf), sy(0));
+            ctx.lineTo(st(0), sy(0));
+            ctx.fillText(0, st(0) - 2, sy(0));
+            ctx.stroke();
+//            ctx.fillText('x', st(0) - 62, sy(yf / 2));
+
+            // draw plot
+
+            ctx.strokeStyle = 'rgb(0,0,255)';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(t0x, y0y);
+            for (let tx = t0x + 1; tx <= tfx; tx++) {
+                let yty = sy(y(sti(tx)));
+                if (y0y >= yty && yty >= yfy) {
+                    ctx.lineTo(tx, yty);
+                } else {
+                    ctx.moveTo(tx, yty);
+                }
+            }
+            ctx.stroke();
+
+
+        }
+        update();
+        $('#inp-K').on('input change', update);
+        $('#inp-w').on('input change', update);
+        $('#inp-z').on('input change', update);
+    </script>
+</body>
+
+</html>

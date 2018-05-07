@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Impulse response and pole</title>
+
+    <link rel="stylesheet" href="../lib/katex/katex.min.css">
+    <script src="../lib/katex/katex.min.js"></script>
+    <link href="pole.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid" style="height:100%">
+        <div id="polepane">
+            <div id="wrap-polemap">
+                <canvas id="polemap">
+                </canvas>
+            </div>
+        </div>
+        <div id="resppane">
+            <div id="tf">
+            </div>
+            <div id="params">
+            </div>
+            <div id="wrap-resp">
+                <canvas id="resp">
+                </canvas>
+            </div>
+        </div>
+
+    </div>
+    <script src="../lib/jquery-3.3.1.min.js"></script>
+    <script>
+        let wrapper = document.getElementById('wrap-polemap');
+        let pcanvas = document.getElementById('polemap');
+        pcanvas.height = wrapper.clientHeight;
+        pcanvas.width = wrapper.clientWidth;
+        let ph = pcanvas.height,
+            pw = pcanvas.width;
+        const imax = 8,
+            imin = -imax,
+            rmin = -imax * 2 / ph * pw * 0.8,
+            rmax = imax * 2 / ph * pw * 0.2;
+        let pctx = pcanvas.getContext("2d");
+
+        let wwrapper = document.getElementById('wrap-resp');
+        let rcanvas = document.getElementById('resp');
+        rcanvas.height = wwrapper.clientHeight;
+        rcanvas.width = wwrapper.clientWidth;
+        let rh = rcanvas.height,
+            rw = rcanvas.width;
+        let rctx = rcanvas.getContext("2d");
+
+
+        function getMousePos(canvas, evt) {
+            var rect = canvas.getBoundingClientRect(), // abs. size of element
+                scaleX = canvas.width / rect.width, // relationship bitmap vs. element for X
+                scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
+
+            return {
+                x: (evt.clientX - rect.left) * scaleX, // scale mouse coordinates after they have
+                y: (evt.clientY - rect.top) * scaleY // been adjusted to be relative to element
+            }
+        }
+
+        const mode_none = 0,
+            mode_const_z = 1,
+            mode_const_alpha = 2,
+            mode_const_omega = 3;
+        let mode = mode_none;
+        let fixed_z = 0,
+            fixed_alpha = 0,
+            fixed_omega = 0;
+
+        function update(e) {
+            let x2r = (x) => (rmax - rmin) * x / pw + rmin;
+            let y2i = (y) => (imax - imin) * y / ph + imin;
+            let r2x = (r) => pw * (r - rmin) / (rmax - rmin);
+            let i2y = (i) => ph * (1 - (i - imin) / (imax - imin));
+            let r = -1,
+                i = 4;
+            if (e !== undefined) {
+                let pos = getMousePos(pcanvas, e);
+                r = x2r(pos.x);
+                i = y2i(pos.y);
+            }else{
+                e={};
+            }
+
+            let ord = i < 0 ? 1 : 2;
+            i = Math.abs(i);
+
+            if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                mode = mode_none;
+            } else if (e.ctrlKey && mode != mode_const_z) {
+                mode = mode_const_z;
+                fixed_z = Math.atan2(i, r);
+            } else if (e.shiftKey && mode != mode_const_alpha) {
+                mode = mode_const_alpha;
+                fixed_alpha = r;
+            } else if (e.altKey && mode != mode_const_omega) {
+                mode = mode_const_omega;
+                fixed_omega = i;
+            }
+
+            if (mode == mode_const_z) {
+                let ip = r * Math.cos(fixed_z) + i * Math.sin(fixed_z);
+                r = ip * Math.cos(fixed_z);
+                i = ip * Math.sin(fixed_z);
+            }
+            if (mode == mode_const_alpha) {
+                r = fixed_alpha;
+            }
+            if (mode == mode_const_omega) {
+                i = fixed_omega;
+            }
+            if (ord == 1) {
+                katex.render(
+                    `
+                    \\begin{aligned}
+                     p &= ${r.toFixed(2)}\\\\
+                        G(s)&=\\frac{1}{(s-p)}\\\\
+                            &=\\frac{1}{s${(-r>0?'+':'')+(-r).toFixed(3)}}
+                    \\end{aligned}
+                    `,
+                    document.getElementById('tf'), {
+                        displayMode: true
+                    });
+            } else {
+                let omega_n = Math.sqrt(r * r + i * i);
+                let K = i / (omega_n * omega_n);
+                let z = -r / omega_n;
+
+                katex.render(
+                    `
+                    \\begin{aligned}
+                        G(s)&=\\frac{${(i).toFixed(2)}}{s^2${(-r>0?'+':'')+(-2*r).toFixed(2)}s+${(r*r+i*i).toFixed(2)}}\\\\
+                        &=\\frac{\\omega}{(s-p_1)(s-p_2)}\\\\
+                        &=\\frac{K\\omega_{\\mathrm{n}}^2}{s^2+2\\zeta\\omega_{\\mathrm{n}}+\\omega_{\\mathrm{n}}^2}
+                    \\end{aligned}
+                    `,
+                    document.getElementById('tf'), {
+                        displayMode: true
+                    });
+
+                katex.render(
+                    `
+                    \\begin{aligned}
+                        p_{1,2}&= \\alpha\\pm \\omega j \\\\
+                        &= ${r.toFixed(2)} \\pm ${i.toFixed(2)}j\\\\
+                        K&=${K.toFixed(3)}\\\\
+                        \\omega_{\\mathrm{n}}&=${omega_n.toFixed(2)}\\\\
+                        \\zeta &= ${z.toFixed(2)} 
+                    \\end{aligned}
+                    `,
+                    document.getElementById('params'), {
+                        displayMode: true
+                    });
+
+            }
+            pctx.clearRect(0, 0, pw, ph);
+            // draw polemap grid
+            pctx.strokeStyle = 'rgb(0,0,0)';
+            pctx.lineWidth = 1;
+            pctx.font = "24pt Meiryo";
+            pctx.textBaseline = "top";
+            pctx.textAlign = "center";
+            for (let r = Math.ceil(rmin); r <= rmax; r = r + 1) {
+                pctx.beginPath();
+                pctx.strokeStyle = 'rgb(200,200,255)';
+                pctx.moveTo(r2x(r), i2y(imin));
+                pctx.lineTo(r2x(r), i2y(imax));
+                pctx.stroke();
+                if (Math.abs(r) > 0.1) {
+                    pctx.fillText(r, r2x(r), i2y(0));
+                }
+            }
+
+            pctx.beginPath();
+            pctx.strokeStyle = 'rgb(0,0,0)';
+            pctx.moveTo(r2x(0), i2y(imin));
+            pctx.lineTo(r2x(0), i2y(imax));
+            pctx.stroke();
+
+            pctx.textBaseline = "middle";
+            pctx.textAlign = "right";
+            for (let i = Math.floor(imin); i <= imax; i = i + 1) {
+                pctx.strokeStyle = 'rgb(200,200,255)';
+                pctx.beginPath();
+                pctx.moveTo(r2x(rmin), i2y(i));
+                pctx.lineTo(r2x(rmax), i2y(i));
+                if (i != 0) {
+                    pctx.fillText(i + 'j', r2x(0) - 2, i2y(i))
+                }
+                pctx.stroke();
+            }
+
+            pctx.beginPath();
+            pctx.strokeStyle = 'rgb(0,0,0)';
+            pctx.moveTo(r2x(rmin), i2y(0));
+            pctx.lineTo(r2x(rmax), i2y(0));
+            pctx.textBaseline = "bottom";
+            pctx.textAlign = "left";
+            pctx.fillText(0, r2x(0) + 2, i2y(0) + 2);
+            pctx.stroke();
+
+            // plot pole
+            pctx.beginPath();
+            pctx.strokeStyle = 'rgb(255,0,0)';
+            pctx.lineWidth = 5;
+
+            if (ord == 1) {
+                pctx.moveTo(r2x(r) - 10, i2y(0) - 10);
+                pctx.lineTo(r2x(r) + 10, i2y(0) + 10);
+                pctx.stroke();
+                pctx.moveTo(r2x(r) + 10, i2y(0) - 10);
+                pctx.lineTo(r2x(r) - 10, i2y(0) + 10);
+                pctx.stroke();
+            } else {
+                pctx.moveTo(r2x(r) - 10, i2y(i) - 10);
+                pctx.lineTo(r2x(r) + 10, i2y(i) + 10);
+                pctx.stroke();
+                pctx.moveTo(r2x(r) + 10, i2y(i) - 10);
+                pctx.lineTo(r2x(r) - 10, i2y(i) + 10);
+                pctx.stroke();
+                pctx.moveTo(r2x(r) - 10, i2y(-i) - 10);
+                pctx.lineTo(r2x(r) + 10, i2y(-i) + 10);
+                pctx.stroke();
+                pctx.moveTo(r2x(r) + 10, i2y(-i) - 10);
+                pctx.lineTo(r2x(r) - 10, i2y(-i) + 10);
+                pctx.stroke();
+            }
+
+            pctx.strokeStyle = 'rgb(0,128,0)';
+            pctx.lineWidth = 1;
+            if (mode == mode_const_z) {
+                pctx.beginPath();
+                pctx.moveTo(r2x(0), i2y(0 * Math.tan(fixed_z)));
+                pctx.lineTo(r2x(rmin), i2y(rmin * Math.tan(fixed_z)));
+                pctx.moveTo(r2x(0), i2y(-0 * Math.tan(fixed_z)));
+                pctx.lineTo(r2x(rmin), i2y(-rmin * Math.tan(fixed_z)));
+                pctx.stroke();
+            }
+
+            if (mode == mode_const_alpha) {
+                pctx.beginPath();
+                pctx.moveTo(r2x(r), i2y(imin));
+                pctx.lineTo(r2x(r), i2y(imax));
+                pctx.stroke();
+            }
+
+            if (mode == mode_const_omega) {
+                pctx.beginPath();
+                pctx.moveTo(r2x(rmin), i2y(i));
+                pctx.lineTo(r2x(rmax), i2y(i));
+                pctx.moveTo(r2x(rmin), i2y(-i));
+                pctx.lineTo(r2x(rmax), i2y(-i));
+                pctx.stroke();
+            }
+
+            let y = 0;
+            if (ord == 1) {
+                y = (t) => 1 * Math.exp(r * t);
+            } else {
+                y = (t) => Math.exp(r * t) * Math.sin(i * t);
+            }
+
+            const tf = 6,
+                xm = 70;
+
+            let t2x = function (t) {
+                return xm + t / tf * (rw - xm * 2);
+            }
+            let x2t = function (x) {
+                return tf * (x - xm) / (rw - xm * 2);
+            }
+
+            let ymax = 0;
+            for (let tx = t2x(0) + 1; tx <= t2x(tf); tx++) {
+                ymax = Math.max(ymax, Math.min(100, Math.abs(y(x2t(tx)))));
+            }
+            ymax = Math.max(ymax, 1.2);
+
+            let y2sy = function (y) {
+                return -y / ymax * rh / 2 + rh / 2;
+            }
+
+
+            rctx.clearRect(0, 0, rw, rh);
+
+
+            // draw grid
+            rctx.strokeStyle = 'rgb(0,0,0)';
+            rctx.lineWidth = 2;
+            rctx.font = "24pt Meiryo";
+            rctx.textBaseline = "top";
+            rctx.textAlign = "center";
+            for (var t = 1; t < tf; t = t + 1) {
+                rctx.beginPath();
+                rctx.strokeStyle = 'rgb(0,0,0)';
+                rctx.moveTo(t2x(t), y2sy(0));
+                rctx.lineTo(t2x(t), y2sy(0) + 15);
+                rctx.stroke();
+                rctx.fillText(t, t2x(t), y2sy(0) + 15);
+            }
+            rctx.textBaseline = "middle";
+            rctx.textAlign = "left";
+            rctx.fillText('t', t2x(tf) + 10, y2sy(0));
+
+            rctx.strokeStyle = 'rgb(0,0,0)';
+            rctx.lineWidth = 2;
+            rctx.beginPath();
+            rctx.moveTo(t2x(0), y2sy(0));
+            rctx.lineTo(t2x(tf), y2sy(0));
+            rctx.stroke();
+
+            let gy = Math.pow(10, Math.floor(Math.log10(ymax * 0.9)));
+            rctx.lineWidth = 1;
+            rctx.strokeStyle = 'rgb(200,200,255)';
+            rctx.beginPath();
+            rctx.moveTo(t2x(0), y2sy(gy));
+            rctx.lineTo(t2x(tf), y2sy(gy));
+            rctx.stroke();
+            rctx.beginPath();
+            rctx.moveTo(t2x(0), y2sy(-gy));
+            rctx.lineTo(t2x(tf), y2sy(-gy));
+            rctx.stroke();
+            rctx.strokeStyle = 'rgb(0,0,0)';
+            rctx.textAlign = "right";
+            rctx.fillText('0', t2x(0) - 10, y2sy(0));
+            rctx.fillText(gy, t2x(0) - 10, y2sy(gy));
+            rctx.fillText(-gy, t2x(0) - 10, y2sy(-gy));
+
+
+            rctx.beginPath();
+            rctx.lineWidth = 2;
+            rctx.moveTo(t2x(0), y2sy(-ymax * 0.9));
+            rctx.lineTo(t2x(0), y2sy(ymax * 0.9));
+            rctx.stroke();
+
+
+            rctx.strokeStyle = 'rgb(0,0,255)';
+            rctx.lineWidth = 3;
+            rctx.beginPath();
+            rctx.moveTo(t2x(0), y2sy(y(0)));
+            for (let tx = t2x(0) + 1; tx <= t2x(tf); tx++) {
+                let yt = y(x2t(tx));
+                if (Math.abs(yt) > ymax * 1.5) {
+                    yt = Math.sign(yt) * ymax * 1.5;
+                }
+                let syt = y2sy(yt);
+                rctx.lineTo(tx, syt);
+            }
+            rctx.stroke();
+
+            if (ord == 2) {
+                rctx.strokeStyle = 'rgb(0,0,0)';
+                rctx.setLineDash([2, 2]);
+                rctx.lineWidth = 1;
+                rctx.beginPath();
+                rctx.moveTo(t2x(0), y2sy(y(0)));
+                for (let tx = t2x(0) + 1; tx <= t2x(tf); tx++) {
+                    let yt = Math.exp(r * x2t(tx));
+                    if (Math.abs(yt) > ymax * 1.5) {
+                        yt = Math.sign(yt) * ymax * 1.5;
+                    }
+                    let syt = y2sy(yt);
+                    rctx.lineTo(tx, syt);
+                }
+                rctx.stroke();
+                rctx.beginPath();
+                rctx.moveTo(t2x(0), y2sy(y(0)));
+                for (let tx = t2x(0) + 1; tx <= t2x(tf); tx++) {
+                    let yt = -Math.exp(r * x2t(tx));
+                    if (Math.abs(yt) > ymax * 1.5) {
+                        yt = Math.sign(yt) * ymax * 1.5;
+                    }
+                    let syt = y2sy(yt);
+                    rctx.lineTo(tx, syt);
+                }
+                rctx.stroke();
+                rctx.setLineDash([]);
+            }
+
+            /*
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'rgb(0,0,0)';
+                        ctx.moveTo(st(0), sy(yf));
+                        ctx.lineTo(st(0), sy(0));
+                        ctx.fillText(0, st(0), sy(0));
+                        ctx.stroke();
+
+                        ctx.textBaseline = "middle";
+                        ctx.textAlign = "right";
+                        for (let y = 0; y <= yf; y = y + 0.5) {
+                            if (parseInt(y * 10) == 0) {
+                                ctx.strokeStyle = 'rgb(0,0,0)';
+                            } else if (parseInt(y * 10) == 10) {
+                                ctx.strokeStyle = 'rgb(255,0,0)';
+                            } else {
+                                ctx.strokeStyle = 'rgb(200,200,200)';
+                            }
+                            ctx.beginPath();
+                            ctx.moveTo(st(0), sy(y));
+                            ctx.lineTo(st(tf), sy(y));
+                            ctx.fillText(y, st(0) - 2, sy(y))
+                            ctx.stroke();
+                        }
+
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'rgb(0,0,0)';
+                        ctx.moveTo(st(tf), sy(0));
+                        ctx.lineTo(st(0), sy(0));
+                        ctx.fillText(0, st(0) - 2, sy(0));
+                        ctx.stroke();
+                        ctx.fillText('x', st(0) - 62, sy(yf / 2));
+
+                        // draw plot
+
+                        ctx.strokeStyle = 'rgb(0,0,255)';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(t0x, y0y);
+                        for (let tx = t0x + 1; tx <= tfx; tx++) {
+                            let yty = sy(y(sti(tx)));
+                            if (y0y >= yty && yty >= yfy) {
+                                ctx.lineTo(tx, yty);
+                            } else {
+                                ctx.moveTo(tx, yty);
+                            }
+                        }
+                        ctx.stroke();
+            */
+
+        }
+        pcanvas.addEventListener("mousemove", update);
+        update();
+    </script>
+</body>
+
+</html>

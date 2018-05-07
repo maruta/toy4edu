@@ -1,0 +1,31 @@
+body, html{
+  height:100%;
+  overflow: hidden;
+  font-size:24px;
+}
+.container-fluid{
+  display:flex;
+  flex-direction: row;
+}
+input{
+  width:100%;
+}
+.infopane{
+  flex:0 0 350px;
+  overflow:hidden;
+  padding:10px;
+}
+.view{
+  height:100vh;
+  padding:0;
+  flex-grow:1;
+  overflow:hidden;
+}
+#resp{
+  height:100%;
+  width:100%;
+}
+label{
+  display: block;
+  margin-top:1em;
+}
