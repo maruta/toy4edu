@@ -38,35 +38,17 @@
     <script>
         let wrapper = document.getElementById('wrap-polemap');
         let pcanvas = document.getElementById('polemap');
-        pcanvas.height = wrapper.clientHeight;
-        pcanvas.width = wrapper.clientWidth;
-        let ph = pcanvas.height,
-            pw = pcanvas.width;
-        const imax = 8,
-            imin = -imax,
-            rmin = -imax * 2 / ph * pw * 0.8,
-            rmax = imax * 2 / ph * pw * 0.2;
+
+        let ph = 0, pw = 0;
+        const imax = 8, imin = -imax;
+        let rmin=0,rmax=0;
         let pctx = pcanvas.getContext("2d");
 
         let wwrapper = document.getElementById('wrap-resp');
         let rcanvas = document.getElementById('resp');
-        rcanvas.height = wwrapper.clientHeight;
-        rcanvas.width = wwrapper.clientWidth;
-        let rh = rcanvas.height,
-            rw = rcanvas.width;
+        let rh = 0,
+            rw = 0;
         let rctx = rcanvas.getContext("2d");
-
-
-        function getMousePos(canvas, evt) {
-            var rect = canvas.getBoundingClientRect(), 
-                scaleX = canvas.width / rect.width,
-                scaleY = canvas.height / rect.height; 
-
-            return {
-                x: (evt.clientX - rect.left) * scaleX, 
-                y: (evt.clientY - rect.top) * scaleY 
-            }
-        }
 
         const mode_none = 0,
             mode_const_z = 1,
@@ -76,6 +58,18 @@
         let fixed_z = 0,
             fixed_alpha = 0,
             fixed_omega = 0;
+
+
+        function getMousePos(canvas, evt) {
+            var rect = canvas.getBoundingClientRect(),
+                scaleX = canvas.width / rect.width,
+                scaleY = canvas.height / rect.height;
+
+            return {
+                x: (evt.clientX - rect.left) * scaleX,
+                y: (evt.clientY - rect.top) * scaleY
+            }
+        }
 
         function update(e) {
             let x2r = (x) => (rmax - rmin) * x / pw + rmin;
@@ -88,8 +82,8 @@
                 let pos = getMousePos(pcanvas, e);
                 r = x2r(pos.x);
                 i = y2i(pos.y);
-            }else{
-                e={};
+            } else {
+                e = {};
             }
 
             let ord = i < 0 ? 1 : 2;
@@ -387,8 +381,27 @@
                 rctx.setLineDash([]);
             }
         }
+
+        function resize_func() {
+            pcanvas.height = wrapper.clientHeight;
+            pcanvas.width = wrapper.clientWidth;
+            rcanvas.height = wwrapper.clientHeight;
+            rcanvas.width = wwrapper.clientWidth;
+
+            ph = pcanvas.height;
+            pw = pcanvas.width;
+            rmin = -imax * 2 / ph * pw * 0.8,
+            rmax = imax * 2 / ph * pw * 0.2;
+        
+            rh = rcanvas.height;
+            rw = rcanvas.width;
+            update();
+        }
+
+        $(window).resize(resize_func);
+        resize_func();
         pcanvas.addEventListener("mousemove", update);
-        update();
+
     </script>
 </body>
 

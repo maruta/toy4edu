@@ -26,14 +26,14 @@
             </label>
             <input type="range" id="inp-K" value="100" min="0" max="200">
 
-            <label for="inp-w"> 
+            <label for="inp-w">
                 <span>Natural Frequency</span>
-                <span id="label-w"></span>        
+                <span id="label-w"></span>
             </label>
             <input type="range" id="inp-w" value="0" min="-100" max="150">
-            <label for="inp-z"> 
-                    <span>Damping Ratio</span>
-            <span id="label-z"></span>
+            <label for="inp-z">
+                <span>Damping Ratio</span>
+                <span id="label-z"></span>
             </label>
             <input type="range" id="inp-z" value="50" min="0" max="200">
         </div>
@@ -46,12 +46,9 @@
     <script>
         let wrapper = document.getElementById('wrapper');
         let canvas = document.getElementById('resp');
-        canvas.height = wrapper.clientHeight * 2;
-        canvas.width = wrapper.clientWidth * 2;
-        let height = canvas.height,
-            width = canvas.width;
-
+        let height =0, width = 0;
         let ctx = canvas.getContext("2d");
+
 
         function update() {
             let K = $('#inp-K').val() * 0.01;
@@ -75,7 +72,7 @@
             const tf = 15,
                 t0x = 100,
                 tfx = Math.ceil(width - 50),
-                y0y = Math.floor(height - 100),
+                y0y = Math.floor(height - 150),
                 yf = 2,
                 yfy = 50;
             let st = function (t) {
@@ -118,7 +115,7 @@
                 ctx.stroke();
                 ctx.fillText(t, st(t), sy(0));
             }
-            ctx.fillText('t', st(tf / 2), sy(0) + 25);
+            ctx.fillText('t', st(tf / 2), sy(0) + 50);
 
             ctx.beginPath();
             ctx.strokeStyle = 'rgb(0,0,0)';
@@ -150,9 +147,7 @@
             ctx.lineTo(st(0), sy(0));
             ctx.fillText(0, st(0) - 2, sy(0));
             ctx.stroke();
-//            ctx.fillText('x', st(0) - 62, sy(yf / 2));
 
-            // draw plot
 
             ctx.strokeStyle = 'rgb(0,0,255)';
             ctx.lineWidth = 6;
@@ -170,7 +165,15 @@
 
 
         }
-        update();
+        function resize_func() {
+            canvas.height = wrapper.clientHeight * 2;
+            canvas.width = wrapper.clientWidth * 2;
+            height = canvas.height,
+            width = canvas.width;
+            update();
+        }
+        $(window).resize(resize_func);
+        resize_func();
         $('#inp-K').on('input change', update);
         $('#inp-w').on('input change', update);
         $('#inp-z').on('input change', update);
