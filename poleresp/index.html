@@ -58,13 +58,13 @@
 
 
         function getMousePos(canvas, evt) {
-            var rect = canvas.getBoundingClientRect(), // abs. size of element
-                scaleX = canvas.width / rect.width, // relationship bitmap vs. element for X
-                scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
+            var rect = canvas.getBoundingClientRect(), 
+                scaleX = canvas.width / rect.width,
+                scaleY = canvas.height / rect.height; 
 
             return {
-                x: (evt.clientX - rect.left) * scaleX, // scale mouse coordinates after they have
-                y: (evt.clientY - rect.top) * scaleY // been adjusted to be relative to element
+                x: (evt.clientX - rect.left) * scaleX, 
+                y: (evt.clientY - rect.top) * scaleY 
             }
         }
 
@@ -386,57 +386,6 @@
                 rctx.stroke();
                 rctx.setLineDash([]);
             }
-
-            /*
-                        ctx.beginPath();
-                        ctx.strokeStyle = 'rgb(0,0,0)';
-                        ctx.moveTo(st(0), sy(yf));
-                        ctx.lineTo(st(0), sy(0));
-                        ctx.fillText(0, st(0), sy(0));
-                        ctx.stroke();
-
-                        ctx.textBaseline = "middle";
-                        ctx.textAlign = "right";
-                        for (let y = 0; y <= yf; y = y + 0.5) {
-                            if (parseInt(y * 10) == 0) {
-                                ctx.strokeStyle = 'rgb(0,0,0)';
-                            } else if (parseInt(y * 10) == 10) {
-                                ctx.strokeStyle = 'rgb(255,0,0)';
-                            } else {
-                                ctx.strokeStyle = 'rgb(200,200,200)';
-                            }
-                            ctx.beginPath();
-                            ctx.moveTo(st(0), sy(y));
-                            ctx.lineTo(st(tf), sy(y));
-                            ctx.fillText(y, st(0) - 2, sy(y))
-                            ctx.stroke();
-                        }
-
-                        ctx.beginPath();
-                        ctx.strokeStyle = 'rgb(0,0,0)';
-                        ctx.moveTo(st(tf), sy(0));
-                        ctx.lineTo(st(0), sy(0));
-                        ctx.fillText(0, st(0) - 2, sy(0));
-                        ctx.stroke();
-                        ctx.fillText('x', st(0) - 62, sy(yf / 2));
-
-                        // draw plot
-
-                        ctx.strokeStyle = 'rgb(0,0,255)';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.moveTo(t0x, y0y);
-                        for (let tx = t0x + 1; tx <= tfx; tx++) {
-                            let yty = sy(y(sti(tx)));
-                            if (y0y >= yty && yty >= yfy) {
-                                ctx.lineTo(tx, yty);
-                            } else {
-                                ctx.moveTo(tx, yty);
-                            }
-                        }
-                        ctx.stroke();
-            */
-
         }
         pcanvas.addEventListener("mousemove", update);
         update();
