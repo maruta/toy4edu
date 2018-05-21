@@ -202,13 +202,17 @@ planck.testbed('Car', function (testbed) {
         if (editor.style.display === 'none') {
             if (testbed.activeKeys.right) {
                 testbed.x += 1;
+                testbed.activeKeys.right = false;
             } else if (testbed.activeKeys.left) {
                 testbed.x -= 1;
+                testbed.activeKeys.left = false;
             }
             if (testbed.activeKeys.down) {
                 testbed.y += 1;
+                testbed.activeKeys.down = false;
             } else if (testbed.activeKeys.up) {
                 testbed.y -= 1;
+                testbed.activeKeys.up = false;
             }
             if (testbed.activeKeys["X"]) {
                 testbed.height *= 1.01;
