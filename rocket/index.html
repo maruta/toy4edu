@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Stabilization of Rocket</title>
+
+    <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../lib/katex/katex.min.css">
+    <script src="../lib/katex/katex.min.js"></script>
+    <link href="rocket.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid" style="height:100%">
+        <div class="row" style="height:100%;">
+            <div class="col-6" style="padding-top:10px;" id="left">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="settings-tab" href="#settings" role="tab" aria-controls="settings" aria-selected="true">settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="Ky-tab" href="#Ky" role="tab" aria-controls="Ky" aria-selected="false">
+                            <span class="latex">y</span> controller</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="Kth-tab" href="#Kth" role="tab" aria-controls="Kth" aria-selected="false">
+                            <span class="latex">\theta</span> controller</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="Kx-tab" href="#Kx" role="tab" aria-controls="Kx" aria-selected="false">
+                            <span class="latex">x</span> controller</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tabreport-tab" href="#tabreport" role="tab" aria-controls="tabreport" aria-selected="false">report</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                        <div class="row">
+                            <div class="col-6">
+                                <h6>parameters</h6>
+                                <div class="form-group">
+                                    <textarea class="form-control" id="field-consts" rows="4"></textarea>
+                                </div>
+                                <h6>initial velocity</h6>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="initialVelocityX" checked>
+                                    <label class="form-check-label latex" for="initialVelocityX">x</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="initialVelocityY" checked>
+                                    <label class="form-check-label latex" for="initialVelocityY">y</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="initialVelocityTh" checked>
+                                    <label class="form-check-label latex" for="initialVelocityTh">\theta</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="wrap-canvas-info">
+                                    <canvas id="canvas-info"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="Ky" role="tabpanel" aria-labelledby="Ky-tab">
+                        <p>Enter the transfer function of the controller in the box below.</p>
+                        <div class="form-group">
+                            <input type="text" class="form-control tfinput" name="field-Ky" id="field-Ky" value="(1+0.5s)/(1+0.5s/10)">
+                            <div class="valid-feedback" id="vf-Ky">
+                            </div>
+                        </div>
+                        <p>
+                            The entered transfer function is parsed as
+                            <span id="eq-Ky"></span>. Together with the plant model
+                            <span id="eq-Py"></span>, closed-loop poles are
+                            <span id="clp-y"></span>, and the Bode plot of the open loop transfer function
+                            <span class="latex">L_y(s)=P_y(s)K_y(s)</span> is as follows:
+                        </p>
+                        <div id="wrap-canvas-Ky">
+                            <canvas id="canvas-Ky"></canvas>
+                        </div>
+                        <p>Transfer function of plant model (which is only used for calculating loop transfer function and is
+                            not related to simulation) is as follows:
+                        </p>
+                        <input type="text" class="form-control tfinput" name="field-Py" id="field-Py" value="1/(m*s^2)">
+                        <div class="valid-feedback" id="vf-Py">
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="Kth" role="tabpanel" aria-labelledby="Kth-tab">
+                        <p>Enter the transfer function of the controller in the box below.</p>
+                        <div class="form-group">
+                            <input type="text" class="form-control tfinput" name="field-Kth" id="field-Kth" value="-(10+10s)/(1+10s/20)">
+                            <div class="valid-feedback" id="vf-Kth">
+                            </div>
+                        </div>
+                        <p>
+                            The entered transfer function is parsed as
+                            <span id="eq-Kth"></span>. Together with the plant model
+                            <span id="eq-Pth"></span>, closed-loop poles are
+                            <span id="clp-th"></span>, and the Bode plot of the open loop transfer function
+                            <span class="latex">L_\theta(s)=P_\theta(s)K_\theta(s)</span> is as follows:
+                        </p>
+                        <div id="wrap-canvas-Kth">
+                            <canvas id="canvas-Kth"></canvas>
+                        </div>
+
+                        <p>Transfer function of plant model (which is only used for calculating loop transfer function and is
+                            not related to simulation) is as follows:</p>
+                        <input type="text" class="form-control tfinput" name="field-Pth" id="field-Pth" value="l/(-I*s^2+m*g*l)">
+                        <div class="valid-feedback" id="vf-Pth">
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="Kx" role="tabpanel" aria-labelledby="Kx-tab">
+                        <p>Enter the transfer function of the controller in the box below.</p>
+                        <div class="form-group">
+                            <input type="text" class="form-control tfinput" name="field-Kx" id="field-Kx" value="0.001(1+10s)/(1+10s/30)">
+                            <div class="valid-feedback" id="vf-Kx">
+                            </div>
+                        </div>
+                        <p>
+                            The entered transfer function is parsed as
+                            <span id="eq-Kx"></span>. Together with the plant model
+                            <span id="eq-Px"></span>, closed-loop poles are
+                            <span id="clp-x"></span>, and the Bode plot of the open loop transfer function
+                            <span class="latex">L_x(s)=P_x(s)K_x(s)</span> is as follows:
+                        </p>
+                        <div id="wrap-canvas-Kx">
+                            <canvas id="canvas-Kx"></canvas>
+                        </div>
+                        <p>Transfer function of plant model (which is only used for calculating loop transfer function and is
+                            not related to simulation) is as follows:</p>
+                        <input type="text" class="form-control tfinput" name="field-Px" id="field-Px" value="1/(m*s^2)*SthKth">
+                        <div class="valid-feedback" id="vf-Px">
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="tabreport" role="tabpanel" aria-labelledby="tabreport-tab">
+                        <h6>Design Summary</h6>
+                        <div class="form-group">
+                            <textarea readonly name="debug" class="form-control" id="debug" rows="15"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6" id="right">
+                <div id="toolbar">
+                    <div class="form-inline">
+                        <label class="mb-2 mr-2" for="field-maxacc">max. accel. of ref.</label>
+                        <input type="text" class="form-control mb-2 mr-2" name="field-maxacc" id="field-maxacc" value="20">
+                        <button type="button" class="btn btn-info mb-2 mr-2" id="toggleinfo" onclick="toggle_info()">
+                            info
+                        </button>
+                        <button type="button" class="btn btn-dark mb-2 mr-2" onclick="clear_rockets()">
+                            clear
+                        </button>
+
+                        <button type="button" class="btn btn-primary mb-2 mr-2" onclick="spawn()">
+                            spawn
+                        </button>
+                    </div>
+
+                </div>
+                <div id="wrap-sim">
+                    <canvas id="sim"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../lib/jquery-3.3.1.min.js"></script>
+    <script src="../lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../lib/mathjs-dist/math.min.js"></script>
+    <script src="../lib/next-pow-2/np2.js"></script>
+    <script src="../lib/durand-kerner/roots.js"></script>
+    <script src="./bode.js"></script>
+    <script src="./rocket.js"></script>
+    <script src="./ltisys.js"></script>
+    <script src="./utils.js"></script>
+    <script src="./main.js"></script>
+    <script>
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,76 @@
+body,
+html {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+}
+
+#toolbar {
+  position: absolute;
+  top: 15px;
+  right: 30px;
+  z-index: 10;
+}
+
+textarea {
+  font-family: 'Consolas', monospaced;
+}
+
+#wrap-canvas-Ky,
+#wrap-canvas-Kx,
+#wrap-canvas-Kth {
+  height: 70vh;
+}
+
+#canvas-Ky,
+#canvas-Kth,
+#canvas-Kx {
+  width: 100%;
+  height: 70vh;
+}
+
+#canvas-info {
+  width: 100%;
+  height: 100%;
+}
+
+#wrap-sim,
+#sim {
+  height: 100%;
+  width: 100%;
+}
+
+#eq-y,
+#eq-th,
+#eq-x {
+  width: 100%;
+  overflow: auto;
+}
+
+input[type='text'] {
+  font-family: Consolas, monospace;
+}
+
+#left {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.tab-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.nav-link {
+  height: 2.6rem;
+}
+
+#myTabContent {
+  padding-top: 1rem;
+}
+
+.now-calc {
+  font-weight: bold;
+  color: #17a2b8;
+}

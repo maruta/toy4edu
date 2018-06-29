@@ -1,0 +1,3 @@
+[submodule "lib/mathjs"]
+	path = lib/mathjs
+	url = https://github.com/maruta/mathjs.git
