@@ -84,4 +84,14 @@ input[type='text'] {
 
 .block-diagram {
   max-width: 40rem;
+  max-height:35vh
+}
+
+.footer-info{
+  color:#008888;
+  position:absolute;
+  bottom:5px;
+  right:5px;
+  pointer-events: none;
+  text-align:right;
 }

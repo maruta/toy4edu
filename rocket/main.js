@@ -349,7 +349,11 @@ function draw_info() {
     let th = 0.5;
     let r;
     let vars = {};
-    math.eval($('#field-consts').val(), vars);
+    try {
+        math.eval($('#field-consts').val(), vars);
+    } catch (e) {
+        return;
+    }
 
     if (rockets.length == 0) {
         r = new Rocket(math.matrix([
@@ -367,13 +371,13 @@ function draw_info() {
         r.L = toNum(vars.L);
         r.W = toNum(vars.W);
         r.F = r.m * r.g;
-        r.phi = 0;    
+        r.phi = 0;
     } else {
         r = rockets[0];
         th = r.x.get([2, 0]);
     }
-    let fx = r.F*Math.sin(r.phi+th);
-    let fy = -r.F*Math.cos(r.phi+th);
+    let fx = r.F * Math.sin(r.phi + th);
+    let fy = -r.F * Math.cos(r.phi + th);
     let phi = r.phi;
 
 
@@ -382,10 +386,10 @@ function draw_info() {
 
     ctx.translate(canvasInfo.width / 2, canvasInfo.height / 2);
     ctx.scale(scale * devicePixelRatio, -scale * devicePixelRatio);
-    ctx.translate(-r.x.get([0, 0]),-r.x.get([1, 0]));
+    ctx.translate(-r.x.get([0, 0]), -r.x.get([1, 0]));
     ctx.strokeStyle = "#aaaaaa";
-    r.draw(ctx, scale*2, false);
-    ctx.translate(r.x.get([0, 0]),r.x.get([1, 0]));
+    r.draw(ctx, scale * 2, false);
+    ctx.translate(r.x.get([0, 0]), r.x.get([1, 0]));
     ctx.rotate(-th);
     let fontSize = 14 / scale;
     ctx.font = `${fontSize}px Consolas`;
@@ -426,13 +430,13 @@ function draw_info() {
     line(0, r.l - r.L / 2, W * 2 + 5 / scale, r.l - r.L / 2);
     line(-W * 3 - 5 / scale, -r.L / 2, W * 2 + 5 / scale, -r.L / 2);
     line(-W * 3 - 5 / scale, r.L / 2, W * 2 + 5 / scale, r.L / 2);
-    line(0,-r.L/2,0,r.L/2+60/scale);
-    canvas_arrow(ctx,10/scale,0,r.L/2,70/scale*Math.sin(-th),r.L/2+70/scale*Math.cos(th));
+    line(0, -r.L / 2, 0, r.L / 2 + 60 / scale);
+    canvas_arrow(ctx, 10 / scale, 0, r.L / 2, 70 / scale * Math.sin(-th), r.L / 2 + 70 / scale * Math.cos(th));
     ctx.beginPath();
-    ctx.arc(0, r.L/2, 40 / scale, Math.PI/2, Math.PI/2+th,th<0);
+    ctx.arc(0, r.L / 2, 40 / scale, Math.PI / 2, Math.PI / 2 + th, th < 0);
     ctx.stroke();
     ctx.textAlign = "center";
-    text("θ",50/scale*Math.sin(-th/2),r.L/2+50/scale*Math.cos(th/2))
+    text("θ", 50 / scale * Math.sin(-th / 2), r.L / 2 + 50 / scale * Math.cos(th / 2))
 
     ctx.beginPath();
     ctx.arc(0, 0, 3 / scale, 0, 2 * Math.PI);
@@ -447,19 +451,19 @@ function draw_info() {
     text("mg", 20 / scale * Math.sin(th) - 5 / scale, -20 / scale * Math.cos(th));
 
     ctx.save();
-    ctx.translate( 0, -r.L/2);
+    ctx.translate(0, -r.L / 2);
     ctx.rotate(th);
-    canvas_arrow(ctx, 10 / scale, 0, 0,  40/scale/(r.m*r.g)*fx,0);
-    canvas_arrow(ctx, 10 / scale, 0, 0,  0,-40/scale/(r.m*r.g)*fy);
+    canvas_arrow(ctx, 10 / scale, 0, 0, 40 / scale / (r.m * r.g) * fx, 0);
+    canvas_arrow(ctx, 10 / scale, 0, 0, 0, -40 / scale / (r.m * r.g) * fy);
     ctx.restore();
     ctx.save();
-    ctx.translate( 0, -r.L/2);
-    ctx.textAlign="center";
+    ctx.translate(0, -r.L / 2);
+    ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    text("fx", 20/scale/(r.m*r.g)*fx *Math.cos(th), 20/scale/(r.m*r.g)*fx *Math.sin(th));
-    ctx.textAlign="right";
+    text("fx", 20 / scale / (r.m * r.g) * fx * Math.cos(th), 20 / scale / (r.m * r.g) * fx * Math.sin(th));
+    ctx.textAlign = "right";
     ctx.textBaseline = "middle";
-    text("fy", 20/scale/(r.m*r.g)*fy *Math.sin(th), -20/scale/(r.m*r.g)*fy *Math.cos(th));
+    text("fy", 20 / scale / (r.m * r.g) * fy * Math.sin(th), -20 / scale / (r.m * r.g) * fy * Math.cos(th));
     ctx.restore();
 }
 
@@ -525,8 +529,8 @@ canvas.ondblclick = function (e) {
     rvx = 0;
     rvy = 0;
 }
+
 canvas.onmousewheel = function (e) {
-    console.log(scale);
     if (e.wheelDelta > 0) {
         scale *= 1.1;
     } else {
@@ -534,6 +538,7 @@ canvas.onmousewheel = function (e) {
     }
     draw_info();
 }
+
 setTimeout(function () {
     window.requestAnimationFrame(loop);
 }, 10);
