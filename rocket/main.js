@@ -337,6 +337,7 @@ function loop() {
     rockets.forEach(function (r) {
         r.draw(ctx, scale, show_info);
     });
+    draw_info();
     window.requestAnimationFrame(loop);
 }
 
@@ -345,28 +346,47 @@ let ctxInfo = canvasInfo.getContext("2d");
 
 function draw_info() {
     let ctx = ctxInfo;
-    let r = new Rocket(math.matrix([
-        [0],
-        [0],
-        [0],
-        [0],
-        [0],
-        [0]
-    ]), 0, {});
+    let th = 0.5;
+    let r;
     let vars = {};
     math.eval($('#field-consts').val(), vars);
-    r.g = toNum(vars.g);
-    r.m = toNum(vars.m);
-    r.I = toNum(vars.I);
-    r.l = toNum(vars.l);
-    r.L = toNum(vars.L);
-    r.W = toNum(vars.W);
+
+    if (rockets.length == 0) {
+        r = new Rocket(math.matrix([
+            [0],
+            [0],
+            [th],
+            [0],
+            [0],
+            [0]
+        ]), 0, {});
+        r.g = toNum(vars.g);
+        r.m = toNum(vars.m);
+        r.I = toNum(vars.I);
+        r.l = toNum(vars.l);
+        r.L = toNum(vars.L);
+        r.W = toNum(vars.W);
+        r.F = r.m * r.g;
+        r.phi = 0;    
+    } else {
+        r = rockets[0];
+        th = r.x.get([2, 0]);
+    }
+    let fx = r.F*Math.sin(r.phi+th);
+    let fy = -r.F*Math.cos(r.phi+th);
+    let phi = r.phi;
+
+
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvasInfo.width, canvasInfo.height);
 
     ctx.translate(canvasInfo.width / 2, canvasInfo.height / 2);
     ctx.scale(scale * devicePixelRatio, -scale * devicePixelRatio);
-    r.draw(ctx, scale, false);
+    ctx.translate(-r.x.get([0, 0]),-r.x.get([1, 0]));
+    ctx.strokeStyle = "#aaaaaa";
+    r.draw(ctx, scale*2, false);
+    ctx.translate(r.x.get([0, 0]),r.x.get([1, 0]));
+    ctx.rotate(-th);
     let fontSize = 14 / scale;
     ctx.font = `${fontSize}px Consolas`;
     ctx.fillStyle = "#008888";
@@ -376,6 +396,7 @@ function draw_info() {
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(1, -1);
+        ctx.rotate(-th);
         ctx.fillText(s, 0, 0);
         ctx.restore();
     }
@@ -386,24 +407,60 @@ function draw_info() {
         ctx.lineTo(ex, ey);
         ctx.stroke();
     }
+    let W = r.W;
 
     ctx.lineWidth = 1 / scale;
     ctx.strokeStyle = "#008888";
     ctx.textAlign = "left";
-    canvas_arrow(ctx, 10 / scale, r.W * 2, r.l - r.L / 2 - 1 / scale, r.W * 2, r.l - r.L / 2);
-    canvas_arrow(ctx, 10 / scale, r.W * 2, r.l - r.L / 2, r.W * 2, -r.L / 2);
-    text("l", r.W * 2 + 2 / scale, r.l / 2 - r.L / 2)
-    canvas_arrow(ctx, 10 / scale, -r.W / 2 - 20 / scale, (r.L - r.l) * 0.6, -r.W / 2, (r.L - r.l) * 0.6);
-    canvas_arrow(ctx, 10 / scale, r.W / 2 + 20 / scale, (r.L - r.l) * 0.6, r.W / 2, (r.L - r.l) * 0.6);
-    text("W", r.W / 2 + 23 / scale, (r.L - r.l) * 0.6)
-    canvas_arrow(ctx, 10 / scale, -r.W * 3, 0, -r.W * 3, r.L / 2);
-    canvas_arrow(ctx, 10 / scale, -r.W * 3, 0, -r.W * 3, -r.L / 2);
+    canvas_arrow(ctx, 10 / scale, W * 2, r.l - r.L / 2 - 1 / scale, W * 2, r.l - r.L / 2);
+    canvas_arrow(ctx, 10 / scale, W * 2, r.l - r.L / 2, W * 2, -r.L / 2);
+    text("ℓ", W * 2 + 2 / scale, r.l / 2 - r.L / 2)
+    canvas_arrow(ctx, 10 / scale, -W / 2 - 20 / scale, (r.L - r.l) * 0.6, -W / 2, (r.L - r.l) * 0.6);
+    canvas_arrow(ctx, 10 / scale, W / 2 + 20 / scale, (r.L - r.l) * 0.6, W / 2, (r.L - r.l) * 0.6);
+    text("W", W / 2 + 23 / scale, (r.L - r.l) * 0.6)
+    canvas_arrow(ctx, 10 / scale, -W * 3, 0, -W * 3, r.L / 2);
+    canvas_arrow(ctx, 10 / scale, -W * 3, 0, -W * 3, -r.L / 2);
     ctx.textAlign = "right";
-    text("L", -r.W * 3 - 2 / scale, 0);
+    text("L", -W * 3 - 2 / scale, 0);
     ctx.strokeStyle = "#888888";
-    line(0, r.l - r.L / 2, r.W * 2 + 5 / scale, r.l - r.L / 2);
-    line(-r.W * 3 - 5 / scale, -r.L / 2, r.W * 2 + 5 / scale, -r.L / 2);
-    line(-r.W * 3 - 5 / scale, r.L / 2, r.W * 2 + 5 / scale, r.L / 2);
+    line(0, r.l - r.L / 2, W * 2 + 5 / scale, r.l - r.L / 2);
+    line(-W * 3 - 5 / scale, -r.L / 2, W * 2 + 5 / scale, -r.L / 2);
+    line(-W * 3 - 5 / scale, r.L / 2, W * 2 + 5 / scale, r.L / 2);
+    line(0,-r.L/2,0,r.L/2+60/scale);
+    canvas_arrow(ctx,10/scale,0,r.L/2,70/scale*Math.sin(-th),r.L/2+70/scale*Math.cos(th));
+    ctx.beginPath();
+    ctx.arc(0, r.L/2, 40 / scale, Math.PI/2, Math.PI/2+th,th<0);
+    ctx.stroke();
+    ctx.textAlign = "center";
+    text("θ",50/scale*Math.sin(-th/2),r.L/2+50/scale*Math.cos(th/2))
+
+    ctx.beginPath();
+    ctx.arc(0, 0, 3 / scale, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.textAlign = "left";
+    text('center of mass (x,y)', 10 / scale, 0);
+    ctx.strokeStyle = "#dc3545";
+    ctx.lineWidth = 2 / scale;
+    canvas_arrow(ctx, 10 / scale, 0, 0, 40 / scale * Math.sin(th), -40 / scale * Math.cos(th));
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#dc3545";
+    text("mg", 20 / scale * Math.sin(th) - 5 / scale, -20 / scale * Math.cos(th));
+
+    ctx.save();
+    ctx.translate( 0, -r.L/2);
+    ctx.rotate(th);
+    canvas_arrow(ctx, 10 / scale, 0, 0,  40/scale/(r.m*r.g)*fx,0);
+    canvas_arrow(ctx, 10 / scale, 0, 0,  0,-40/scale/(r.m*r.g)*fy);
+    ctx.restore();
+    ctx.save();
+    ctx.translate( 0, -r.L/2);
+    ctx.textAlign="center";
+    ctx.textBaseline = "top";
+    text("fx", 20/scale/(r.m*r.g)*fx *Math.cos(th), 20/scale/(r.m*r.g)*fx *Math.sin(th));
+    ctx.textAlign="right";
+    ctx.textBaseline = "middle";
+    text("fy", 20/scale/(r.m*r.g)*fy *Math.sin(th), -20/scale/(r.m*r.g)*fy *Math.cos(th));
+    ctx.restore();
 }
 
 function resize_info() {

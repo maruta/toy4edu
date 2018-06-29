@@ -43,6 +43,12 @@
                     <div class="tab-pane fade show active" id="settings" role="tabpanel" aria-labelledby="settings-tab">
                         <div class="row">
                             <div class="col-6">
+                                <h6>dimensions</h6>
+                                <div id="wrap-canvas-info">
+                                    <canvas id="canvas-info"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-6">
                                 <h6>parameters</h6>
                                 <div class="form-group">
                                     <textarea class="form-control" id="field-consts" rows="4"></textarea>
@@ -61,12 +67,11 @@
                                     <label class="form-check-label latex" for="initialVelocityTh">\theta</label>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div id="wrap-canvas-info">
-                                    <canvas id="canvas-info"></canvas>
-                                </div>
-                            </div>
+
                         </div>
+                        <hr>
+                        <h6>linearized model and control system</h6>
+                        <img class="block-diagram" src="block_diagram.svg" alt="">
                     </div>
                     <div class="tab-pane fade" id="Ky" role="tabpanel" aria-labelledby="Ky-tab">
                         <p>Enter the transfer function of the controller in the box below.</p>

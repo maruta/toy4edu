@@ -29,6 +29,13 @@ textarea {
   height: 70vh;
 }
 
+#wrap-canvas-info {
+  width: 100%;
+  height: 20rem;
+  margin: 0;
+  padding: 0;
+}
+
 #canvas-info {
   width: 100%;
   height: 100%;
@@ -73,4 +80,8 @@ input[type='text'] {
 .now-calc {
   font-weight: bold;
   color: #17a2b8;
+}
+
+.block-diagram {
+  max-width: 40rem;
 }
