@@ -407,30 +407,14 @@ let center = {
 };
 
 function loop() {
-    let txt = "";
-    if (keyPressed[37]) {
-        // left
-        center.x -= 10 / scale;
-    }
-    if (keyPressed[38]) {
-        // Up
-        center.y += 10 / scale;
-    }
-    if (keyPressed[39]) {
-        // right
-        center.x += 10 / scale;
-    }
-    if (keyPressed[40]) {
-        // down
-        center.y -= 10 / scale;
-    }
-    if (keyPressed[90]) {
-        // z
-        scale *= 1.02;
-    }
-    if (keyPressed[88]) {
-        // x
-        scale /= 1.02;
+
+    if (document.activeElement.type !== "textarea" && document.activeElement.type !== "text") {
+        if (keyPressed[37]) center.x -= 10 / scale; // left
+        if (keyPressed[38]) center.y += 10 / scale; // Up
+        if (keyPressed[39]) center.x += 10 / scale; // right
+        if (keyPressed[40]) center.y -= 10 / scale; // down
+        if (keyPressed[90]) scale *= 1.02; // z
+        if (keyPressed[88]) scale /= 1.02; // x
     }
 
 
@@ -443,7 +427,6 @@ function loop() {
             r.step(t, rx, ry, dt);
             t += dt;
         }
-        txt += r.x.toString() + '\n';
     });
     rockets = rockets.filter(function (r) {
         let y = r.x.get([1, 0]);
@@ -710,6 +693,7 @@ handleInput();
 
 function updateMaxAcc() {
     maxAcc = Number($('#field-maxacc').val());
+    maxAcc = isNaN(maxAcc) ? 1: maxAcc;
 }
 $('#field-maxacc').on("input", updateMaxAcc);
 updateMaxAcc();
