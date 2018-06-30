@@ -1,3 +1,6 @@
 [submodule "lib/mathjs"]
 	path = lib/mathjs
 	url = https://github.com/maruta/mathjs.git
+[submodule "lib/js-deflate"]
+	path = lib/js-deflate
+	url = https://github.com/dankogai/js-deflate.git
