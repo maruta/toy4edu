@@ -5,6 +5,11 @@ class Rocket {
         this.K = K;
         this.t0 = t0;
         this.rth = 0;
+        this.rgen = (t, rx, ry) => math.matrix([
+            [rx],
+            [ry]
+        ]);
+        this.debug = () => undefined;
     }
 
     f(xvec, u) {
@@ -39,9 +44,12 @@ class Rocket {
         ]);
     }
 
-    step(tnow, h) {
+    step(tnow, rx0, ry0, h) {
         let t = tnow - this.t0;
         let y0 = this.x0.get([1, 0]);
+        let r = this.rgen(t, rx0, ry0);
+        let rx = r.get([0, 0]);
+        let ry = r.get([1, 0]);
 
         const x = this.x.get([0, 0]),
             y = this.x.get([1, 0]),
@@ -75,9 +83,10 @@ class Rocket {
         this.x = rk4(function (x) {
             return that.f(x, u)
         }, this.x, h);
+        this.debug(t, this);
     };
 
-    draw(ctx,scale,show_info) {
+    draw(ctx, scale, show_info) {
 
         ctx.save();
         const x = this.x.get([0, 0]);
@@ -102,19 +111,19 @@ class Rocket {
             ctx.fillText("x = " + x.toFixed(1), W * 2, fontSize * (-4));
             ctx.fillText("y = " + y.toFixed(1), W * 2, fontSize * (-3));
             ctx.fillText("θ = " + th.toFixed(3), W * 2, fontSize * (-2));
-            ctx.fillText("rθ = " + rth.toFixed(3), W * 2, fontSize * (-1));
-            ctx.fillText("dx = " + dx.toFixed(1), W * 2, fontSize * (0));
-            ctx.fillText("dy = " + dy.toFixed(1), W * 2, fontSize * 1);
-            ctx.fillText("dθ = " + dth.toFixed(3), W * 2, fontSize * 2);
+            ctx.fillText("rθ = " + rth.toPrecision(3), W * 2, fontSize * (-1));
+            ctx.fillText("dx = " + dx.toPrecision(3), W * 2, fontSize * (0));
+            ctx.fillText("dy = " + dy.toPrecision(3), W * 2, fontSize * 1);
+            ctx.fillText("dθ = " + dth.toPrecision(3), W * 2, fontSize * 2);
             ctx.fillText("F = " + F.toFixed(2), W * 2, fontSize * 3);
-            ctx.fillText("φ = " + phi.toFixed(3), W * 2, fontSize * 4);
+            ctx.fillText("φ = " + phi.toPrecision(3), W * 2, fontSize * 4);
 
             ctx.restore();
         }
 
         ctx.rotate(-th);
 
-        ctx.lineWidth = 2/scale;
+        ctx.lineWidth = 2 / scale;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 

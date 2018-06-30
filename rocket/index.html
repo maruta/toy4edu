@@ -8,7 +8,6 @@
     <meta name="author" content="">
 
     <title>Stabilization of Rocket</title>
-
     <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../lib/katex/katex.min.css">
     <script src="../lib/katex/katex.min.js"></script>
@@ -36,7 +35,7 @@
                             <span class="latex">x</span> controller</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="tabreport-tab" href="#tabreport" role="tab" aria-controls="tabreport" aria-selected="false">report</a>
+                        <a class="nav-link" id="tabdebug-tab" href="#tabdebug" role="tab" aria-controls="tabdebug" aria-selected="false">debug</a>
                     </li>
                 </ul>
                 <div class="tab-content" id="myTabContent">
@@ -55,16 +54,16 @@
                                 </div>
                                 <h6>initial velocity</h6>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="initialVelocityX" checked>
-                                    <label class="form-check-label latex" for="initialVelocityX">x</label>
+                                    <input class="form-check-input" type="checkbox" id="chk-iniVelX" checked>
+                                    <label class="form-check-label latex" for="chk-iniVelX">x</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="initialVelocityY" checked>
-                                    <label class="form-check-label latex" for="initialVelocityY">y</label>
+                                    <input class="form-check-input" type="checkbox" id="chk-iniVelY" checked>
+                                    <label class="form-check-label latex" for="chk-iniVelY">y</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="initialVelocityTh" checked>
-                                    <label class="form-check-label latex" for="initialVelocityTh">\theta</label>
+                                    <input class="form-check-input" type="checkbox" id="chk-iniVelTh" checked>
+                                    <label class="form-check-label latex" for="chk-iniVelTh">\theta</label>
                                 </div>
                             </div>
 
@@ -80,13 +79,35 @@
                             <div class="valid-feedback" id="vf-Ky">
                             </div>
                         </div>
-                        <p>
-                            The entered transfer function is parsed as
-                            <span id="eq-Ky"></span>. Together with the plant model
-                            <span id="eq-Py"></span>, closed-loop poles are
-                            <span id="clp-y"></span>, and the Bode plot of the open loop transfer function
-                            <span class="latex">L_y(s)=P_y(s)K_y(s)</span> is as follows:
-                        </p>
+                        <table class="table table-bordered tbl-spec">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Controller
+                                        <span class="latex">K_y(s)</span>
+                                    </th>
+                                    <td>
+                                        <div id="eq-Ky" class="text-left"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Model
+                                        <span class="latex">P_y(s)</span>
+                                    </th>
+                                    <td>
+                                        <div id="eq-Py" class="text-left"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Closed-loop Poles</th>
+                                    <td>
+                                        <div id="clp-y" class="text-left"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h6 class="text-center">Bode plot of open-loop transfer function
+                            <span class="latex">L_y(s)=P_y(s)K_y(s)</span>
+                        </h6>
                         <div id="wrap-canvas-Ky">
                             <canvas id="canvas-Ky"></canvas>
                         </div>
@@ -104,13 +125,35 @@
                             <div class="valid-feedback" id="vf-Kth">
                             </div>
                         </div>
-                        <p>
-                            The entered transfer function is parsed as
-                            <span id="eq-Kth"></span>. Together with the plant model
-                            <span id="eq-Pth"></span>, closed-loop poles are
-                            <span id="clp-th"></span>, and the Bode plot of the open loop transfer function
-                            <span class="latex">L_\theta(s)=P_\theta(s)K_\theta(s)</span> is as follows:
-                        </p>
+                        <table class="table table-bordered tbl-spec">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Controller
+                                        <span class="latex">K_\theta(s)</span>
+                                    </th>
+                                    <td>
+                                        <div id="eq-Kth" class="text-left"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Model
+                                        <span class="latex">P_\theta(s)</span>
+                                    </th>
+                                    <td>
+                                        <div id="eq-Pth" class="text-left"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Closed-loop Poles</th>
+                                    <td>
+                                        <div id="clp-th" class="text-left"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h6 class="text-center">Bode plot of open-loop transfer function
+                            <span class="latex">L_\theta(s)=P_\theta(s)K_\theta(s)</span>
+                        </h6>
                         <div id="wrap-canvas-Kth">
                             <canvas id="canvas-Kth"></canvas>
                         </div>
@@ -128,13 +171,35 @@
                             <div class="valid-feedback" id="vf-Kx">
                             </div>
                         </div>
-                        <p>
-                            The entered transfer function is parsed as
-                            <span id="eq-Kx"></span>. Together with the plant model
-                            <span id="eq-Px"></span>, closed-loop poles are
-                            <span id="clp-x"></span>, and the Bode plot of the open loop transfer function
-                            <span class="latex">L_x(s)=P_x(s)K_x(s)</span> is as follows:
-                        </p>
+                        <table class="table table-bordered tbl-spec">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Controller
+                                        <span class="latex">K_x(s)</span>
+                                    </th>
+                                    <td>
+                                        <div id="eq-Kx" class="text-left"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Model
+                                        <span class="latex">P_x(s)</span>
+                                    </th>
+                                    <td>
+                                        <div id="eq-Px" class="text-left"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Closed-loop Poles</th>
+                                    <td>
+                                        <div id="clp-x" class="text-left"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h6 class="text-center">Bode plot of open-loop transfer function
+                            <span class="latex">L_x(s)=P_x(s)K_x(s)</span>
+                        </h6>
                         <div id="wrap-canvas-Kx">
                             <canvas id="canvas-Kx"></canvas>
                         </div>
@@ -144,10 +209,25 @@
                         <div class="valid-feedback" id="vf-Px">
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="tabreport" role="tabpanel" aria-labelledby="tabreport-tab">
+                    <div class="tab-pane fade" id="tabdebug" role="tabpanel" aria-labelledby="tabdebug-tab">
                         <h6>Design Summary</h6>
                         <div class="form-group">
-                            <textarea readonly name="debug" class="form-control" id="debug" rows="15"></textarea>
+                            <textarea name="debug" class="form-control" id="debug" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off"
+                                spellcheck="false"></textarea>
+                        </div>
+                        <div class="form-inline">
+                            <label class="mb-2 mr-2" for="field-debug-amount">amount</label>
+                            <input type="text" class="form-control mb-2 mr-2" name="field-debug-amount" style="width:4rem" id="field-debug-amount" value="1">
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-x" onclick="debug_step('x')">
+                                step x
+                            </button>
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-y" onclick="debug_step('y')">
+                                step y
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="debug-out" class="form-control" id="debug-out" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off"
+                                spellcheck="false"></textarea>
                         </div>
                     </div>
                 </div>
@@ -155,16 +235,24 @@
             <div class="col-6" id="right">
                 <div id="toolbar">
                     <div class="form-inline">
-                        <label class="mb-2 mr-2" for="field-maxacc">max. accel. of ref.</label>
-                        <input type="text" class="form-control mb-2 mr-2" name="field-maxacc" id="field-maxacc" value="20">
+                        <div class="form-check-inline">
+                            <input class="form-check-input mb-2 mr-2" type="checkbox" id="chk-center-r">
+                            <label class="form-check-label mb-2 mr-2" for="chk-center-r">center (rx,ry)</label>
+                        </div>
+
+                        <label class="mb-2 mr-2 latex" for="field-maxacc">\max|\ddot{r}_{x,y}|</label>
+                        <input type="text" class="form-control mb-2 mr-2" name="field-maxacc" style="width:4rem" id="field-maxacc" value="1">
+                        <button type="button" class="btn btn-success mb-2 mr-2" data-toggle="modal" data-target="#save-dialog">
+                            save
+                        </button>
                         <button type="button" class="btn btn-info mb-2 mr-2" id="toggleinfo" onclick="toggle_info()">
-                            info
+                            hide info
                         </button>
                         <button type="button" class="btn btn-dark mb-2 mr-2" onclick="clear_rockets()">
                             clear
                         </button>
 
-                        <button type="button" class="btn btn-primary mb-2 mr-2" onclick="spawn()">
+                        <button type="button" class="btn btn-primary mb-2 mr-2" onclick="btn_spawn()">
                             spawn
                         </button>
                     </div>
@@ -172,26 +260,49 @@
                 </div>
                 <div id="wrap-sim">
                     <canvas id="sim"></canvas>
-                    <div class="footer-info">
-                        use mouse wheel to zoom in/out<br>TOYS FOR CONTROL EDUCATION #4 ROCKET by Ichiro Maruta
+                    <div class="howto">
+                        ↑↓←→: Move, Z/X/Wheel: Zoom
+                    </div>
+                    <div class="about">
+                        TOYS FOR CONTROL EDUCATION #4 ROCKET by Ichiro Maruta
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="modal fade" id="save-dialog" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">keep this URL</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" class="form-control" id="save-url">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="copy-url">Copy to Clipboard</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <script src="../lib/jquery-3.3.1.min.js"></script>
-    <script src="../lib/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../lib/mathjs-dist/math.min.js"></script>
-    <script src="../lib/next-pow-2/np2.js"></script>
-    <script src="../lib/durand-kerner/roots.js"></script>
-    <script src="./bode.js"></script>
-    <script src="./rocket.js"></script>
-    <script src="./ltisys.js"></script>
-    <script src="./utils.js"></script>
-    <script src="./main.js"></script>
-    <script>
-    </script>
+        <script src="../lib/jquery-3.3.1.min.js"></script>
+        <script src="../lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="../lib/mathjs-dist/math.min.js"></script>
+        <script src="../lib/next-pow-2/np2.js"></script>
+        <script src="../lib/durand-kerner/roots.js"></script>
+        <script src="../lib/js-deflate/rawdeflate.js"></script>
+        <script src="../lib/js-deflate/rawinflate.js"></script>
+        <script src="./bode.js"></script>
+        <script src="./rocket.js"></script>
+        <script src="./ltisys.js"></script>
+        <script src="./utils.js"></script>
+        <script src="./main.js"></script>
+        <script>
+        </script>
 </body>
 
 </html>

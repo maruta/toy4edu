@@ -66,6 +66,8 @@ input[type='text'] {
 
 .tab-content {
   flex: 1;
+  margin-right: -16px;
+  padding-right: 16px;
   overflow: auto;
 }
 
@@ -75,6 +77,7 @@ input[type='text'] {
 
 #myTabContent {
   padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .now-calc {
@@ -84,14 +87,43 @@ input[type='text'] {
 
 .block-diagram {
   max-width: 40rem;
-  max-height:35vh
+  max-height: 35vh
 }
 
-.footer-info{
-  color:#008888;
-  position:absolute;
-  bottom:5px;
-  right:5px;
+.howto,
+.about {
+  color: #008888;
+  position: absolute;
   pointer-events: none;
-  text-align:right;
+  font-weight: bold;
+}
+
+.howto {
+  bottom: 5px;
+  left: 5px;
+}
+
+.about {
+  bottom: 5px;
+  right: 5px;
+  text-align: right;
+}
+
+.katex-display {
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
+}
+
+.text-left .katex-display {
+  text-align: left;
+}
+
+#save-dialog {
+  position: absolute;
+  padding: 20px 20px 20px 20px;
+}
+
+.tbl-spec td,
+.tbl-spec th {
+  vertical-align: middle;
 }
