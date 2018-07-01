@@ -329,13 +329,13 @@ planck.testbed = function(opts, callback) {
         });
 
         var downKeys = {};
-        window.addEventListener("keydown", function(e) {
+        document.addEventListener("keydown", function(e) {
             var keyCode = e.keyCode;
             downKeys[keyCode] = true;
             updateActiveKeys(keyCode, true);
             testbed.keydown && testbed.keydown(keyCode, String.fromCharCode(keyCode));
         });
-        window.addEventListener("keyup", function(e) {
+        document.addEventListener("keyup", function(e) {
             var keyCode = e.keyCode;
             downKeys[keyCode] = false;
             updateActiveKeys(keyCode, false);
