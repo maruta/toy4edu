@@ -100,13 +100,14 @@ input[type='text'] {
 
 .howto {
   bottom: 5px;
-  left: 5px;
+  left: 20px;
 }
 
 .about {
   bottom: 5px;
   right: 5px;
   text-align: right;
+  font-size:0.8rem;
 }
 
 .katex-display {

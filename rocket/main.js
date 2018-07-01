@@ -15,8 +15,12 @@ document.onkeydown = function (e) {
 }
 
 let design = {
-    params: {},
-    controllers: {},
+    params: 'g = 9.8\nL = 3; W = 0.3; l = L/2\nm = 1; I = 1/3 m*l^2',
+    controllers: {
+        y: '2(1+0.5s)/(1+0.5s/10)',
+        th: '-10(1+1s)/(1+10s/20)',
+        x: '0.001(1+10s)/(1+10s/30)'
+    },
     ui: {}
 };
 
@@ -68,11 +72,7 @@ if (window.location.hash) {
         load_design(JSON.parse(decode(hash)));
     }
 } else {
-    $('#field-consts').val(
-        `g = 9.8
-L = 3; W = 0.3; l = L/2
-m = 1; I = 1/3 m*l^2`
-    );
+    load_design(design);
 }
 
 $('#save-dialog').on('shown.bs.modal', function () {
@@ -114,17 +114,22 @@ let updateBode = {
 
 let workerJobs = {};
 
+function startWorkerCLP(v){
+    workerCalcCLP[v] = new Worker("worker_calcCLP.js");
+    workerJobs[v] = 0;
+    workerCalcCLP[v].onmessage = function (e) {
+        workerJobs[v]--;
+        if (workerJobs[v] == 0) {
+            updateCLP(v, e.data[0]);
+        }
+    }
+}
+
+
 vlist.forEach(
     (v) => {
         $(`#K${v}-tab`).on("shown.bs.tab", updateBode[v]);
-        workerCalcCLP[v] = new Worker("worker_calcCLP.js");
-        workerJobs[v] = 0;
-        workerCalcCLP[v].onmessage = function (e) {
-            workerJobs[v]--;
-            if (workerJobs[v] == 0) {
-                updateCLP(v, e.data[0]);
-            }
-        }
+        startWorkerCLP(v);
     }
 );
 
@@ -271,6 +276,10 @@ function updateController(design, toEditor = true) {
             }
 
             $('#clp-' + v).text('(now calculating...)').addClass('now-calc');
+            if(workerJobs[v]>0){
+                workerCalcCLP[v].terminate();
+                startWorkerCLP(v);
+            }
             workerJobs[v]++;
             workerCalcCLP[v].postMessage([JSON.stringify(eq), JSON.stringify(tfP[v])]);
 
@@ -440,28 +449,55 @@ function loop() {
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.scale(scale * devicePixelRatio, -scale * devicePixelRatio);
     ctx.translate(-center.x, -center.y)
-    vxmin = -canvas.width / 2 / scale + center.x;
-    vxmax = +canvas.width / 2 / scale + center.x;
-    vymin = -canvas.height / 2 / scale + center.y;
-    vymax = +canvas.height / 2 / scale + center.y;
+    vxmin = -canvas.width/2/devicePixelRatio/ scale + center.x;
+    vxmax = +canvas.width/2/devicePixelRatio / scale + center.x;
+    vymin = -canvas.height/2/devicePixelRatio / scale + center.y;
+    vymax = +canvas.height/2/devicePixelRatio/ scale + center.y;
+    
+    let fontSize = 14 / scale;
+    ctx.font = `bold ${fontSize.toFixed(5)}px Arial`;
 
-    const gw = 1 * Math.pow(10, -Math.floor(Math.log10(scale / 30)))
+    function text(s, x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(1, -1);
+        ctx.fillText(s, 0, 0);
+        ctx.restore();
+    }
+
+    const gw = 1 * Math.pow(10, -Math.floor(Math.log10(scale / 10)))
     ctx.strokeStyle = "#AAAAFF";
     ctx.lineWidth = 0.5 / scale;
     for (let x = Math.floor(vxmin / gw) * gw; x <= vxmax; x += gw) {
-        ctx.lineWidth = (x == 0 ? 2 : 0.5) / scale;
+        ctx.lineWidth = ((Math.round(x/gw)%10==0) ? 1.5 : 0.5) / scale;
+        ctx.lineWidth = x == 0 ? 2/scale : ctx.lineWidth;
         ctx.beginPath();
         ctx.moveTo(x, vymin);
         ctx.lineTo(x, vymax);
         ctx.stroke();
     }
     for (let y = Math.floor(vymin / gw) * gw; y <= vymax; y += gw) {
-        ctx.lineWidth = (y == 0 ? 2 : 0.5) / scale;
+        ctx.lineWidth = ((Math.round(y/gw)%10==0) ? 1.5 : 0.5) / scale;
+        ctx.lineWidth = y == 0 ? 2/scale : ctx.lineWidth;
         ctx.beginPath();
         ctx.moveTo(vxmin, y);
         ctx.lineTo(vxmax, y);
         ctx.stroke();
     }
+    ctx.lineWidth = 2/scale;
+    ctx.strokeStyle = "#333333";
+    let uni = 10*gw > canvas.width/4/devicePixelRatio/scale ? 1:10;
+    ctx.beginPath();
+    ctx.moveTo(vxmax-15/scale, vymax-85/scale+10/scale);
+    ctx.lineTo(vxmax-15/scale, vymax-85/scale);
+    ctx.lineTo(vxmax-15/scale-uni*gw, vymax-85/scale);
+    ctx.lineTo(vxmax-15/scale-uni*gw, vymax-85/scale+10/scale);
+    ctx.stroke();
+    ctx.fillStyle = "#333333";
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "right";
+    let gwstr = math.unit(gw*uni,'m').toString();
+    text(gwstr,vxmax-30/scale-uni*gw,vymax-85/scale)
 
     let rfx = (rrx - rx),
         rfy = (rry - ry);
@@ -497,18 +533,9 @@ function loop() {
     ctx.lineTo(rx, vymax);
     ctx.stroke();
 
-    let fontSize = 14 / scale;
-    ctx.font = `${fontSize}px Consolas`;
     ctx.fillStyle = "#FF0000";
     ctx.textBaseline = "middle";
-
-    function text(s, x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.scale(1, -1);
-        ctx.fillText(s, 0, 0);
-        ctx.restore();
-    }
+    ctx.font = `bold ${fontSize}px Consolas`;
     ctx.textAlign = "right";
     text(`rx = ${rx.toFixed(2)}`, rx - 14 / scale, ry + 28 / scale);
     text(`ry = ${ry.toFixed(2)}`, rx - 14 / scale, ry + 14 / scale);
@@ -693,7 +720,7 @@ handleInput();
 
 function updateMaxAcc() {
     maxAcc = Number($('#field-maxacc').val());
-    maxAcc = isNaN(maxAcc) ? 1: maxAcc;
+    maxAcc = isNaN(maxAcc) ? 1 : maxAcc;
 }
 $('#field-maxacc').on("input", updateMaxAcc);
 updateMaxAcc();

@@ -75,31 +75,35 @@
                     <div class="tab-pane fade" id="Ky" role="tabpanel" aria-labelledby="Ky-tab">
                         <p>Enter the transfer function of the controller in the box below.</p>
                         <div class="form-group">
-                            <input type="text" class="form-control tfinput" name="field-Ky" id="field-Ky" value="(1+0.5s)/(1+0.5s/10)">
+                            <input type="text" class="form-control tfinput" name="field-Ky" id="field-Ky">
                             <div class="valid-feedback" id="vf-Ky">
                             </div>
                         </div>
-                        <table class="table table-bordered tbl-spec">
+                        <table class="table table-sm table-bordered tbl-spec" style="margin-bottom:0.1rem;">
                             <tbody>
                                 <tr>
-                                    <th scope="row">Controller
+                                    <th scope="col">Controller
                                         <span class="latex">K_y(s)</span>
                                     </th>
+                                    <th scope="col">Model
+                                        <span class="latex">P_y(s)</span>
+                                    </th>
+                                </tr>
+                                <tr>
                                     <td>
                                         <div id="eq-Ky" class="text-left"></div>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Model
-                                        <span class="latex">P_y(s)</span>
-                                    </th>
                                     <td>
                                         <div id="eq-Py" class="text-left"></div>
                                     </td>
                                 </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-sm table-bordered tbl-spec">
+                            <tbody>
                                 <tr>
-                                    <th scope="row">Closed-loop Poles</th>
-                                    <td>
+                                    <th scope="row" colspan=1>Closed-loop Poles</th>
+                                    <td colspan=1>
                                         <div id="clp-y" class="text-left"></div>
                                     </td>
                                 </tr>
@@ -121,31 +125,35 @@
                     <div class="tab-pane fade" id="Kth" role="tabpanel" aria-labelledby="Kth-tab">
                         <p>Enter the transfer function of the controller in the box below.</p>
                         <div class="form-group">
-                            <input type="text" class="form-control tfinput" name="field-Kth" id="field-Kth" value="-(10+10s)/(1+10s/20)">
+                            <input type="text" class="form-control tfinput" name="field-Kth" id="field-Kth">
                             <div class="valid-feedback" id="vf-Kth">
                             </div>
                         </div>
-                        <table class="table table-bordered tbl-spec">
+                        <table class="table table-sm table-bordered tbl-spec" style="margin-bottom:0.1rem;">
                             <tbody>
                                 <tr>
-                                    <th scope="row">Controller
+                                    <th scope="col">Controller
                                         <span class="latex">K_\theta(s)</span>
                                     </th>
+                                    <th scope="col">Model
+                                        <span class="latex">P_\theta(s)</span>
+                                    </th>
+                                </tr>
+                                <tr>
                                     <td>
                                         <div id="eq-Kth" class="text-left"></div>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Model
-                                        <span class="latex">P_\theta(s)</span>
-                                    </th>
                                     <td>
                                         <div id="eq-Pth" class="text-left"></div>
                                     </td>
                                 </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-sm table-bordered tbl-spec">
+                            <tbody>
                                 <tr>
-                                    <th scope="row">Closed-loop Poles</th>
-                                    <td>
+                                    <th scope="row" colspan=1>Closed-loop Poles</th>
+                                    <td colspan=1>
                                         <div id="clp-th" class="text-left"></div>
                                     </td>
                                 </tr>
@@ -167,36 +175,43 @@
                     <div class="tab-pane fade" id="Kx" role="tabpanel" aria-labelledby="Kx-tab">
                         <p>Enter the transfer function of the controller in the box below.</p>
                         <div class="form-group">
-                            <input type="text" class="form-control tfinput" name="field-Kx" id="field-Kx" value="0.001(1+10s)/(1+10s/30)">
+                            <input type="text" class="form-control tfinput" name="field-Kx" id="field-Kx">
                             <div class="valid-feedback" id="vf-Kx">
                             </div>
                         </div>
-                        <table class="table table-bordered tbl-spec">
+                        <table class="table table-sm table-bordered tbl-spec" style="margin-bottom:0.1rem;">
                             <tbody>
                                 <tr>
-                                    <th scope="row">Controller
+                                    <th scope="col">Controller
                                         <span class="latex">K_x(s)</span>
                                     </th>
+                                    <th scope="col">Model
+                                        <span class="latex">P_x(s)</span>
+                                    </th>
+                                </tr>
+                                <tr>
                                     <td>
                                         <div id="eq-Kx" class="text-left"></div>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Model
-                                        <span class="latex">P_x(s)</span>
-                                    </th>
                                     <td>
                                         <div id="eq-Px" class="text-left"></div>
                                     </td>
                                 </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-sm table-bordered tbl-spec">
+                            <tbody>
                                 <tr>
                                     <th scope="row">Closed-loop Poles</th>
+                                </tr>
+                                <tr>
                                     <td>
                                         <div id="clp-x" class="text-left"></div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+
                         <h6 class="text-center">Bode plot of open-loop transfer function
                             <span class="latex">L_x(s)=P_x(s)K_x(s)</span>
                         </h6>
@@ -245,9 +260,6 @@
                         <button type="button" class="btn btn-success mb-2 mr-2" data-toggle="modal" data-target="#save-dialog">
                             save
                         </button>
-                        <button type="button" class="btn btn-info mb-2 mr-2" id="toggleinfo" onclick="toggle_info()">
-                            hide info
-                        </button>
                         <button type="button" class="btn btn-dark mb-2 mr-2" onclick="clear_rockets()">
                             clear
                         </button>
@@ -263,8 +275,8 @@
                     <div class="howto">
                         ↑↓←→: Move, Z/X/Wheel: Zoom
                     </div>
-                    <div class="about">
-                        TOYS FOR CONTROL EDUCATION #4 ROCKET by Ichiro Maruta
+                    <div class="about d-none d-xl-block">
+                        TOYS FOR CONTROL EDUCATION #4 ROCKET<br> by Ichiro Maruta
                     </div>
                 </div>
             </div>
