@@ -6,6 +6,14 @@ let height, width;
 var workerCalcCLP = {};
 const vlist = ['y', 'th', 'x'];
 
+const REFCURSOR = Object.freeze({
+    X: [1, 0],
+    Y: [0, 1],
+    XY: [1, 1]
+});
+
+let refcursor = REFCURSOR.XY;
+
 var keyPressed = {};
 document.onkeyup = function (e) {
     keyPressed[e.keyCode] = false;
@@ -114,7 +122,7 @@ let updateBode = {
 
 let workerJobs = {};
 
-function startWorkerCLP(v){
+function startWorkerCLP(v) {
     workerCalcCLP[v] = new Worker("worker_calcCLP.js");
     workerJobs[v] = 0;
     workerCalcCLP[v].onmessage = function (e) {
@@ -134,18 +142,8 @@ vlist.forEach(
 );
 
 
-let show_info = true;
+let show_info = 0;
 
-function toggle_info() {
-    show_info = !show_info;
-    if (show_info) {
-        $('#toggleinfo').addClass("active");
-        $('#toggleinfo').text('hide info')
-    } else {
-        $('#toggleinfo').removeClass("active");
-        $('#toggleinfo').text('show info')
-    }
-}
 
 let rx = 0,
     rvx = 0,
@@ -276,7 +274,7 @@ function updateController(design, toEditor = true) {
             }
 
             $('#clp-' + v).text('(now calculating...)').addClass('now-calc');
-            if(workerJobs[v]>0){
+            if (workerJobs[v] > 0) {
                 workerCalcCLP[v].terminate();
                 startWorkerCLP(v);
             }
@@ -344,6 +342,55 @@ function btn_spawn() {
     ]));
 }
 
+let autoref_t0, rax, ray;
+
+function rgen_debug_ramp_y() {
+    rx = 0;
+    ry = (t - autoref_t0) * rvy;
+}
+
+function rgen_debug_ramp_x() {
+    ry = 0;
+    rx = (t - autoref_t0) * rvx;
+}
+
+function rgen_debug_acc_y() {
+    rx = 0;
+    rvy = (t - autoref_t0) * ray;
+    ry = 1 / 2 * (t - autoref_t0) * (t - autoref_t0) * ray;
+}
+
+function rgen_debug_acc_x() {
+    ry = 0;
+    rvx = (t - autoref_t0) * rax;
+    rx = 1 / 2 * (t - autoref_t0) * (t - autoref_t0) * rax;
+}
+
+
+function debug_ramp_y(vel) {
+    autoref_t0 = t;
+    rvy = vel == undefined ? Number($('#field-debug-amount').val()) : vel;
+    rgen = rgen_debug_ramp_y;
+}
+
+function debug_ramp_x(vel) {
+    autoref_t0 = t;
+    rvx = vel == undefined ? Number($('#field-debug-amount').val()) : vel;
+    rgen = rgen_debug_ramp_x;
+}
+
+function debug_accel_y(acc) {
+    autoref_t0 = t;
+    ray = acc == undefined ? Number($('#field-debug-amount').val()) : acc;
+    rgen = rgen_debug_acc_y;
+}
+
+function debug_accel_x(acc) {
+    autoref_t0 = t;
+    rax = acc == undefined ? Number($('#field-debug-amount').val()) : acc;
+    rgen = rgen_debug_acc_x;
+}
+
 function debug_step(v) {
     d = Object.assign({}, design);
     let rx = 0;
@@ -373,6 +420,71 @@ function debug_step(v) {
     ]));
 }
 
+function debug_mass_spawn_x(list) {
+    refcursor = REFCURSOR.X;
+    show_info = 0;
+
+    let n = (list == undefined) ? designs.length : list.length;
+
+    for (let k = 0; k < n; k++) {
+        let idx = (list == undefined) ? k : list[k];
+        d = Object.assign({}, designs[idx]);
+        let rx = 0;
+        let ry = (k - n / 2) * 10;
+        d.rgen = (t, rx0, ry0) => math.matrix([
+            [rx0 + rx],
+            [ry]
+        ]);
+        d.debug = (t, r) => {}
+        spawn(d, math.matrix([
+            [rx],
+            [ry],
+            [0],
+            [0],
+            [0],
+            [0]
+        ]));
+    }
+    rx = 0;
+    rvx = 0;
+    rrx = 0;
+    ry = 0;
+    rvy = 0;
+    rry = 0;
+}
+
+function debug_mass_spawn_y(list) {
+    refcursor = REFCURSOR.Y;
+    let n = (list == undefined) ? designs.length : list.length;
+    show_info = 90;
+    for (let k = 0; k < n; k++) {
+        let idx = (list == undefined) ? k : list[k];
+        d = Object.assign({}, designs[idx]);
+        let rx = (k - n / 2) * 10;
+        let ry = 0;
+        d.rgen = (t, rx0, ry0) => math.matrix([
+            [rx],
+            [ry0]
+        ]);
+        d.debug = (t, r) => {}
+        spawn(d, math.matrix([
+            [rx],
+            [ry],
+            [0],
+            [0],
+            [0],
+            [0]
+        ]));
+    }
+    rx = 0;
+    rvx = 0;
+    rrx = 0;
+    ry = 0;
+    rvy = 0;
+    rry = 0;
+}
+
+
 function spawn(design0, x0) {
     let vars = {};
     let designed = updateController(design0, false);
@@ -399,6 +511,10 @@ function spawn(design0, x0) {
     if (design0.debug !== undefined) {
         r.debug = design0.debug;
     }
+    if (design0.name !== undefined) {
+        r.name = design0.name;
+    }
+
     rockets.push(r);
 }
 
@@ -415,6 +531,22 @@ let center = {
     y: 0
 };
 
+function rgen_manual() {
+    let rfx = (rrx - rx),
+        rfy = (rry - ry);
+    let softsign = (x) => 100 * x / (1 + 100 * Math.abs(x));
+    rfx = 2 / dt * (softsign(rfx) * Math.sqrt(0.9 * 2 * maxAcc * math.abs(rfx)) - rvx);
+    rfx = clip(rfx, -maxAcc, maxAcc);
+    rfy = 2 / dt * (softsign(rfy) * Math.sqrt(0.9 * 2 * maxAcc * math.abs(rfy)) - rvy);
+    rfy = clip(rfy, -maxAcc, maxAcc);
+
+    rvx += rfx * dt;
+    rvy += rfy * dt;
+    rx += rvx * dt;
+    ry += rvy * dt;
+}
+let rgen = rgen_manual;
+
 function loop() {
 
     if (document.activeElement.type !== "textarea" && document.activeElement.type !== "text") {
@@ -427,16 +559,20 @@ function loop() {
     }
 
 
-    if ($('#chk-center-r').prop('checked')) {
+    if ($('#chk-center-rx').prop('checked')) {
         center.x = rx;
+    }
+    if ($('#chk-center-ry').prop('checked')) {
         center.y = ry;
     }
     rockets.forEach(function (r) {
+        let t0 = t;
         for (let i = 0; i < ((1 / 60) / dt - 0.1); i++) {
-            r.step(t, rx, ry, dt);
-            t += dt;
+            r.step(t0, rx, ry, dt);
+            t0 += dt;
         }
     });
+    t += 1 / 60;
     rockets = rockets.filter(function (r) {
         let y = r.x.get([1, 0]);
         let x = r.x.get([0, 0]);
@@ -449,11 +585,11 @@ function loop() {
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.scale(scale * devicePixelRatio, -scale * devicePixelRatio);
     ctx.translate(-center.x, -center.y)
-    vxmin = -canvas.width/2/devicePixelRatio/ scale + center.x;
-    vxmax = +canvas.width/2/devicePixelRatio / scale + center.x;
-    vymin = -canvas.height/2/devicePixelRatio / scale + center.y;
-    vymax = +canvas.height/2/devicePixelRatio/ scale + center.y;
-    
+    vxmin = -canvas.width / 2 / devicePixelRatio / scale + center.x;
+    vxmax = +canvas.width / 2 / devicePixelRatio / scale + center.x;
+    vymin = -canvas.height / 2 / devicePixelRatio / scale + center.y;
+    vymax = +canvas.height / 2 / devicePixelRatio / scale + center.y;
+
     let fontSize = 14 / scale;
     ctx.font = `bold ${fontSize.toFixed(5)}px Arial`;
 
@@ -469,48 +605,38 @@ function loop() {
     ctx.strokeStyle = "#AAAAFF";
     ctx.lineWidth = 0.5 / scale;
     for (let x = Math.floor(vxmin / gw) * gw; x <= vxmax; x += gw) {
-        ctx.lineWidth = ((Math.round(x/gw)%10==0) ? 1.5 : 0.5) / scale;
-        ctx.lineWidth = x == 0 ? 2/scale : ctx.lineWidth;
+        ctx.lineWidth = ((Math.round(x / gw) % 10 == 0) ? 1.5 : 0.5) / scale;
+        ctx.lineWidth = x == 0 ? 2 / scale : ctx.lineWidth;
         ctx.beginPath();
         ctx.moveTo(x, vymin);
         ctx.lineTo(x, vymax);
         ctx.stroke();
     }
     for (let y = Math.floor(vymin / gw) * gw; y <= vymax; y += gw) {
-        ctx.lineWidth = ((Math.round(y/gw)%10==0) ? 1.5 : 0.5) / scale;
-        ctx.lineWidth = y == 0 ? 2/scale : ctx.lineWidth;
+        ctx.lineWidth = ((Math.round(y / gw) % 10 == 0) ? 1.5 : 0.5) / scale;
+        ctx.lineWidth = y == 0 ? 2 / scale : ctx.lineWidth;
         ctx.beginPath();
         ctx.moveTo(vxmin, y);
         ctx.lineTo(vxmax, y);
         ctx.stroke();
     }
-    ctx.lineWidth = 2/scale;
+    ctx.lineWidth = 2 / scale;
     ctx.strokeStyle = "#333333";
-    let uni = 10*gw > canvas.width/4/devicePixelRatio/scale ? 1:10;
+    let uni = 10 * gw > canvas.width / 4 / devicePixelRatio / scale ? 1 : 10;
     ctx.beginPath();
-    ctx.moveTo(vxmax-15/scale, vymax-85/scale+10/scale);
-    ctx.lineTo(vxmax-15/scale, vymax-85/scale);
-    ctx.lineTo(vxmax-15/scale-uni*gw, vymax-85/scale);
-    ctx.lineTo(vxmax-15/scale-uni*gw, vymax-85/scale+10/scale);
+    ctx.moveTo(vxmax - 15 / scale, vymax - 85 / scale + 10 / scale);
+    ctx.lineTo(vxmax - 15 / scale, vymax - 85 / scale);
+    ctx.lineTo(vxmax - 15 / scale - uni * gw, vymax - 85 / scale);
+    ctx.lineTo(vxmax - 15 / scale - uni * gw, vymax - 85 / scale + 10 / scale);
     ctx.stroke();
     ctx.fillStyle = "#333333";
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "right";
-    let gwstr = math.unit(gw*uni,'m').toString();
-    text(gwstr,vxmax-30/scale-uni*gw,vymax-85/scale)
+    let gwstr = math.unit(gw * uni, 'm').toString();
+    text(gwstr, vxmax - 30 / scale - uni * gw, vymax - 85 / scale)
 
-    let rfx = (rrx - rx),
-        rfy = (rry - ry);
-    let softsign = (x) => 100 * x / (1 + 100 * Math.abs(x));
-    rfx = 2 / dt * (softsign(rfx) * Math.sqrt(0.9 * 2 * maxAcc * math.abs(rfx)) - rvx);
-    rfx = clip(rfx, -maxAcc, maxAcc);
-    rfy = 2 / dt * (softsign(rfy) * Math.sqrt(0.9 * 2 * maxAcc * math.abs(rfy)) - rvy);
-    rfy = clip(rfy, -maxAcc, maxAcc);
 
-    rvx += rfx * dt;
-    rvy += rfy * dt;
-    rx += rvx * dt;
-    ry += rvy * dt;
+    rgen();
 
     ctx.strokeStyle = "#FF0000";
     ctx.lineWidth = 3 / scale;
@@ -524,21 +650,26 @@ function loop() {
     ctx.stroke();
     ctx.lineWidth = 1 / scale;
     ctx.strokeStyle = "#FF0000";
-    ctx.beginPath();
-    ctx.moveTo(vxmin, ry);
-    ctx.lineTo(vxmax, ry);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(rx, vymin);
-    ctx.lineTo(rx, vymax);
-    ctx.stroke();
+    if (refcursor[1] == 1) {
+        ctx.beginPath();
+        ctx.moveTo(vxmin, ry);
+        ctx.lineTo(vxmax, ry);
+        ctx.stroke();
+    }
+    if (refcursor[0] == 1) {
+        ctx.beginPath();
+        ctx.moveTo(rx, vymin);
+        ctx.lineTo(rx, vymax);
+        ctx.stroke();
+    }
 
     ctx.fillStyle = "#FF0000";
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "top";
     ctx.font = `bold ${fontSize}px Consolas`;
-    ctx.textAlign = "right";
-    text(`rx = ${rx.toFixed(2)}`, rx - 14 / scale, ry + 28 / scale);
-    text(`ry = ${ry.toFixed(2)}`, rx - 14 / scale, ry + 14 / scale);
+    ctx.textAlign = "left";
+    text(`rx = ${rx.toFixed(2)}`, rx+2/scale, vymax);
+    ctx.textBaseline = "bottom";    
+    text(`ry = ${ry.toFixed(2)}`, vxmin+2/scale, ry);
     ctx.fillStyle = "#004433";
     ctx.textAlign = "left";
     rockets.forEach(function (r) {
@@ -715,6 +846,22 @@ function handleInput() {
     }, 500);
 }
 
+function full_screen() {
+    $('#left').removeClass('col-6').addClass('d-none');
+    $('#right').removeClass('col-6').addClass('col-12');
+    $('#btn-full').addClass('d-none');
+    $('#btn-normal').removeClass('d-none');
+    resize_func();
+}
+
+function normal_screen() {
+    $('#left').addClass('col-6').removeClass('d-none');
+    $('#right').addClass('col-6').removeClass('col-12');
+    $('#btn-full').removeClass('d-none');
+    $('#btn-normal').addClass('d-none');
+    resize_func();
+}
+
 $('.tfinput,#field-consts').on("input", handleInput);
 handleInput();
 
@@ -732,6 +879,7 @@ canvas.onclick = function (e) {
     mouseY = e.clientY - Math.floor(rect.top);
     rrx = (mouseX - width / 2) / scale + center.x;
     rry = -(mouseY - height / 2) / scale + center.y;
+    rgen = rgen_manual;
 }
 
 canvas.ondblclick = function (e) {
@@ -744,6 +892,7 @@ canvas.ondblclick = function (e) {
     ry = rry;
     rvx = 0;
     rvy = 0;
+    rgen = rgen_manual;
 }
 
 canvas.onmousewheel = function (e) {

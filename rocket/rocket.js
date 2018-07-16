@@ -5,6 +5,9 @@ class Rocket {
         this.K = K;
         this.t0 = t0;
         this.rth = 0;
+        this.Fx = 0;
+        this.Fy = 0;
+        this.Fn = 0;
         this.rgen = (t, rx, ry) => math.matrix([
             [rx],
             [ry]
@@ -29,11 +32,11 @@ class Rocket {
         let wx = 0,
             wy = 0,
             wth = 0;
-        if ($('#disturbance').prop('checked')) {
+/*        if ($('#disturbance').prop('checked')) {
             wx = Math.random() * 0.1 - 0.05;
             wy = Math.random() * 0.1 - 0.05;
             wth = Math.random() * 0.1 - 0.05;
-        }
+        }*/
         return math.matrix([
             [dx],
             [dy],
@@ -71,14 +74,17 @@ class Rocket {
 
         //            if (Fy < 0.1 * this.g * this.m) Fy = 0.1 * this.g * this.m;
 
-        this.F = Math.sqrt(Fx * Fx + Fy * Fy);
-        this.phi = Math.atan2(Fx, Fy) - th;
+        let F = Math.sqrt(Fx * Fx + Fy * Fy);
+        let phi = Math.atan2(Fx, Fy) - th;
         //            this.phi = Math.atan2(-Fx, Fy);
 
         let u = math.matrix([
-            [this.phi],
-            [this.F]
+            [phi],
+            [F]
         ]);
+        this.Fx = this.Fx + Fx;
+        this.Fy = this.Fy + Fy; 
+        this.Fn = this.Fn + 1;       
         let that = this;
         this.x = rk4(function (x) {
             return that.f(x, u)
@@ -96,13 +102,35 @@ class Rocket {
         const dy = this.x.get([4, 0]);
         const dth = this.x.get([5, 0]);
         const rth = this.rth;
-        const F = this.F;
-        const phi = this.phi;
+        let F = Math.sqrt(this.Fx * this.Fx + this.Fy * this.Fy)/(this.Fn>0 ? this.Fn : 1);
+        let phi = Math.atan2(this.Fx, this.Fy) - th;
+        this.Fx=0;
+        this.Fy=0;
+        this.Fn=0;
         const L = this.L;
         const W = this.W;
 
         ctx.translate(x, y);
-        if (show_info) {
+        if (this.name !==undefined){
+            ctx.save();
+
+            ctx.scale(1, -1);
+            let fontSize = 18 / scale;
+            ctx.font = `${fontSize}px Consolas`;
+            if(show_info==0){
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+                ctx.fillText(this.name, W * 2, fontSize * (0));
+            }else{
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                ctx.translate(W * 2, fontSize * (0))
+                ctx.rotate(math.PI/2);
+                ctx.fillText(this.name, 0,0);
+            }
+            ctx.restore();
+
+        }else if (show_info) {
             ctx.save();
 
             ctx.scale(1, -1);

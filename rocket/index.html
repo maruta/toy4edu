@@ -10,6 +10,7 @@
     <title>Stabilization of Rocket</title>
     <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../lib/katex/katex.min.css">
+    <link href="../lib/open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
     <script src="../lib/katex/katex.min.js"></script>
     <link href="rocket.css" rel="stylesheet">
 </head>
@@ -239,6 +240,21 @@
                             <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-y" onclick="debug_step('y')">
                                 step y
                             </button>
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-ramp-x" onclick="debug_ramp_x()">
+                                ramp x
+                            </button>
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-ramp-y" onclick="debug_ramp_y()">
+                                ramp y
+                            </button>
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-acc-x" onclick="debug_acc_x()">
+                                acc x
+                            </button>
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-acc-y" onclick="debug_acc_y()">
+                                acc y
+                            </button>                            
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-mass-spawn" onclick="debug_mass_spawn()">
+                                Mass spawn
+                            </button>                            
                         </div>
                         <div class="form-group">
                             <textarea name="debug-out" class="form-control" id="debug-out" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off"
@@ -251,12 +267,17 @@
                 <div id="toolbar">
                     <div class="form-inline">
                         <div class="form-check-inline">
-                            <input class="form-check-input mb-2 mr-2" type="checkbox" id="chk-center-r">
-                            <label class="form-check-label mb-2 mr-2" for="chk-center-r">center (rx,ry)</label>
+                            <input class="form-check-input mb-2 mr-2" type="checkbox" id="chk-center-rx">
+                            <label class="form-check-label mb-2 mr-2" for="chk-center-rx">center rx</label>
+                        </div>
+                        <div class="form-check-inline">
+                            <input class="form-check-input mb-2 mr-2" type="checkbox" id="chk-center-ry">
+                            <label class="form-check-label mb-2 mr-2" for="chk-center-ry">center ry</label>
                         </div>
 
                         <label class="mb-2 mr-2 latex" for="field-maxacc">\max|\ddot{r}_{x,y}|</label>
                         <input type="text" class="form-control mb-2 mr-2" name="field-maxacc" style="width:4rem" id="field-maxacc" value="1">
+                     
                         <button type="button" class="btn btn-success mb-2 mr-2" data-toggle="modal" data-target="#save-dialog">
                             save
                         </button>
@@ -267,6 +288,12 @@
                         <button type="button" class="btn btn-primary mb-2 mr-2" onclick="btn_spawn()">
                             spawn
                         </button>
+                        <button type="button" class="btn btn-outline-dark mb-2 mr-2" id="btn-full" onclick="full_screen()">
+                            <span class="oi oi-fullscreen-enter"></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-dark mb-2 mr-2 d-none" id="btn-normal" onclick="normal_screen()">
+                            <span class="oi oi-fullscreen-exit"></span>
+                        </button>                           
                     </div>
 
                 </div>

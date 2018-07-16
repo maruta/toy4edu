@@ -4,3 +4,6 @@
 [submodule "lib/js-deflate"]
 	path = lib/js-deflate
 	url = https://github.com/dankogai/js-deflate.git
+[submodule "lib/open-iconic"]
+	path = lib/open-iconic
+	url = https://github.com/iconic/open-iconic.git
