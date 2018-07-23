@@ -9,3 +9,7 @@ Toys for control education
 3. [Pole and impulse response](https://maruta.github.io/toy4edu/poleresp/index.html)  
   Use [Ctrl]/[Shift]/[Alt] keys to fix damping ratio / real part / imgainary part of poles.
 4. [Rocket](https://maruta.github.io/toy4edu/rocket/index.html)
+
+### Source
+
+ * https://github.com/maruta/toy4edu/
