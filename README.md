@@ -12,4 +12,4 @@ Toys for control education
 
 ### Source
 
- * https://github.com/maruta/toy4edu/
+ * [https://github.com/maruta/toy4edu/](https://github.com/maruta/toy4edu/)
