@@ -222,7 +222,7 @@ planck.testbed('Car', function (testbed) {
 
     let buttonSpawn = document.getElementById('spawn');
     let checkbox = document.getElementById('autospawn');
-    checkbox.checked = false;
+    checkbox.checked = codeFromHash;
     buttonSpawn.addEventListener('click', function (event) {
         spawnFromUserCode();
     }, false);
