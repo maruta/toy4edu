@@ -19,9 +19,12 @@ if (localStorage.codeeditor !== undefined) {
     documents = JSON.parse(localStorage.codeeditor);
 }
 
+var codeFromHash = false;
+
 if (window.location.hash) {
     var hash = window.location.hash.substr(2);
     documents[0].code = decode(hash);
+    codeFromHash = true;
 }
 
 // editor
