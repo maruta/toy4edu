@@ -60,6 +60,7 @@ planck.testbed('Car', function (testbed) {
             x0: 0,
             y0: 0,
             v0: 0,
+            m: 4.0,
             filterGroupIndex: 0
         }, props);
 
@@ -69,7 +70,7 @@ planck.testbed('Car', function (testbed) {
 
         car.body = world.createDynamicBody(Vec2(0.0, 1.0));
         let fx1 = car.body.createFixture(pl.Box(0.1, 0.1, Vec2(1.4, -0.6)), {
-            density: 4.0,
+            density: car.m,
             filterGroupIndex: car.filterGroupIndex
         });
         fx1.render = {
