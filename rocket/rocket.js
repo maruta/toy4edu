@@ -123,9 +123,11 @@ class Rocket {
                 ctx.fillStyle = "#004433";
                 let re = /(.*)\((.*)\)/
                 let name = re.exec(this.name)
-                ctx.fillText(name[1], W * 2, fontSize * (0));
-                ctx.font = `${fontSize}px BIZ UDPゴシック`;
-                ctx.fillText(name[2], W * 2, fontSize * (1.2));
+                if(name){
+                    ctx.fillText(name[1], W * 2, fontSize * (0));
+                    ctx.font = `${fontSize}px BIZ UDPゴシック`;
+                    ctx.fillText(name[2], W * 2, fontSize * (1.2));    
+                }
             }else{
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";
