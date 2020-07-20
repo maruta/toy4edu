@@ -82,8 +82,8 @@ class Rocket {
             [phi],
             [F]
         ]);
-        this.Fx = this.Fx + Fx;
-        this.Fy = this.Fy + Fy; 
+        this.Fx = Fx;
+        this.Fy = Fy; 
         this.Fn = this.Fn + 1;       
         let that = this;
         this.x = rk4(function (x) {
@@ -116,11 +116,16 @@ class Rocket {
 
             ctx.scale(1, -1);
             let fontSize = 18 / scale;
-            ctx.font = `${fontSize}px Consolas`;
+            ctx.font = `bold ${fontSize}px BIZ UDPゴシック`;
             if(show_info==0){
                 ctx.textAlign = "left";
                 ctx.textBaseline = "middle";
-                ctx.fillText(this.name, W * 2, fontSize * (0));
+                ctx.fillStyle = "#004433";
+                let re = /(.*)\((.*)\)/
+                let name = re.exec(this.name)
+                ctx.fillText(name[1], W * 2, fontSize * (0));
+                ctx.font = `${fontSize}px BIZ UDPゴシック`;
+                ctx.fillText(name[2], W * 2, fontSize * (1.2));
             }else{
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";

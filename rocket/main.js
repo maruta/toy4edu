@@ -2,6 +2,12 @@ let wrapper = document.getElementById('wrap-sim');
 let canvas = document.getElementById('sim');
 let ctx = canvas.getContext("2d");
 let height, width;
+let omega = 0;
+let getDisplayName = (r) => "";
+let shakeAxis;
+let nxref = 1;
+let nxstep = 0;
+
 
 var workerCalcCLP = {};
 const vlist = ['y', 'th', 'x'];
@@ -397,18 +403,22 @@ function debug_step(v) {
     let ry = 0;
     let out = $('#debug-out');
     let idx = 0;
+    let u;
     if (v === 'x') {
         rx = Number($('#field-debug-amount').val());
+        u = (r) => r.Fx
     } else {
         idx = 1;
         ry = Number($('#field-debug-amount').val());
+        u = (r) => r.Fy
     }
     d.rgen = (t, rx0, ry0) => math.matrix([
         [rx],
         [ry]
     ]);
+    out.val(`t\tx\ty\tFx\tFy\n`)
     d.debug = (t, r) => {
-        out.val(out.val() + `${t.toFixed(4)}\t${r.x.get([idx,0]).toPrecision(5)}\n`);
+        out.val(out.val() + `${t.toFixed(4)}\t${r.x.get([0,0]).toPrecision(5)}\t${r.x.get([1,0]).toPrecision(5)}\t${r.Fx.toPrecision(5)}\t${r.Fy.toPrecision(5)}\n`);
     }
     spawn(d, math.matrix([
         [0],
@@ -420,17 +430,34 @@ function debug_step(v) {
     ]));
 }
 
+function reset_r(){
+    rx = 0;
+    rvx = 0;
+    rrx = 0;
+    ry = 0;
+    rvy = 0;
+    rry = 0;
+    rgen = rgen_manual
+}
+
 function debug_mass_spawn_x(list) {
     refcursor = REFCURSOR.X;
+    getDisplayName = (r) => r.displayNameX;
     show_info = 0;
 
     let n = (list == undefined) ? designs.length : list.length;
 
+    let ny = 7;
+    let nx = Math.ceil(n/ny);
+    nxstep = 30
+    nxref = nx
     for (let k = 0; k < n; k++) {
         let idx = (list == undefined) ? k : list[k];
         d = Object.assign({}, designs[idx]);
-        let rx = 0;
-        let ry = (k - n / 2) * 10;
+        let ax = Math.floor((n-k-1)/ny);
+        let ay = (n-k-1) % ny;
+        let rx = ax*nxstep;
+        let ry = (-ay + ny / 2) * 10;
         d.rgen = (t, rx0, ry0) => math.matrix([
             [rx0 + rx],
             [ry]
@@ -453,14 +480,16 @@ function debug_mass_spawn_x(list) {
     rry = 0;
 }
 
+
 function debug_mass_spawn_y(list) {
     refcursor = REFCURSOR.Y;
+    getDisplayName = (r) => r.displayNameY;
     let n = (list == undefined) ? designs.length : list.length;
     show_info = 90;
     for (let k = 0; k < n; k++) {
         let idx = (list == undefined) ? k : list[k];
         d = Object.assign({}, designs[idx]);
-        let rx = (k - n / 2) * 10;
+        let rx = (k - n / 2) * 5;
         let ry = 0;
         d.rgen = (t, rx0, ry0) => math.matrix([
             [rx],
@@ -484,6 +513,36 @@ function debug_mass_spawn_y(list) {
     rry = 0;
 }
 
+function shake(v){
+    let width = Number($('#field-debug-amount').val())
+    let t0 = t
+    shakeAxis = v
+    omega = 2*Math.PI/10
+    if (v === 'x') {
+        rgen = function(){
+            omega = 0.5//0.1+(t-t0)*(t-t0)*2e-5
+            rx = width*(1 - Math.cos(omega*(t-t0)))/2
+            rvx = width * omega * Math.sin(omega*(t-t0))/2
+            // let vel = 2
+            // let ph = (t-t0)<5 ?  0 : (t-t0-5)/2/(width/vel) % 1;
+            // if(ph<0.5){
+            //     rvx = 1
+            //     rx = ph*2*width
+            // }else{
+            //     rvx = -1
+            //     rx = (1 - ph)*width*2
+            // }
+            // rx = width*(1 - Math.sign(Math.cos(omega*(t-t0))))/2
+            // rvx = 0
+        }        
+    } else {
+        rgen = function(){
+            omega = 0.1+(t-t0)*(t-t0)*8e-5
+            ry = width*(1 - Math.cos(omega*(t-t0)))/2
+            rvy = width * omega * Math.sin(omega*(t-t0))/2
+        }        
+    }
+}
 
 function spawn(design0, x0) {
     let vars = {};
@@ -511,9 +570,7 @@ function spawn(design0, x0) {
     if (design0.debug !== undefined) {
         r.debug = design0.debug;
     }
-    if (design0.name !== undefined) {
-        r.name = design0.name;
-    }
+    r.name = getDisplayName(design0);
 
     rockets.push(r);
 }
@@ -576,7 +633,7 @@ function loop() {
     rockets = rockets.filter(function (r) {
         let y = r.x.get([1, 0]);
         let x = r.x.get([0, 0]);
-        return (!isNaN(x) && !isNaN(y));
+        return (!isNaN(x) && !isNaN(y) && Math.abs(r.x.get([2,0]))<100);
     });
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -639,15 +696,17 @@ function loop() {
     rgen();
 
     ctx.strokeStyle = "#FF0000";
-    ctx.lineWidth = 3 / scale;
-    ctx.beginPath();
-    ctx.moveTo(rrx - 10 / scale, rry - 10 / scale);
-    ctx.lineTo(rrx + 10 / scale, rry + 10 / scale);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(rrx - 10 / scale, rry + 10 / scale);
-    ctx.lineTo(rrx + 10 / scale, rry - 10 / scale);
-    ctx.stroke();
+    if(refcursor[0]==1 && refcursor[1]==1){
+        ctx.lineWidth = 3 / scale;
+        ctx.beginPath();
+        ctx.moveTo(rrx - 10 / scale, rry - 10 / scale);
+        ctx.lineTo(rrx + 10 / scale, rry + 10 / scale);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(rrx - 10 / scale, rry + 10 / scale);
+        ctx.lineTo(rrx + 10 / scale, rry - 10 / scale);
+        ctx.stroke();    
+    }
     ctx.lineWidth = 1 / scale;
     ctx.strokeStyle = "#FF0000";
     if (refcursor[1] == 1) {
@@ -657,10 +716,12 @@ function loop() {
         ctx.stroke();
     }
     if (refcursor[0] == 1) {
-        ctx.beginPath();
-        ctx.moveTo(rx, vymin);
-        ctx.lineTo(rx, vymax);
-        ctx.stroke();
+        for(let k=0;k<nxref;k++){
+            ctx.beginPath();
+            ctx.moveTo(rx+nxstep*k, vymin);
+            ctx.lineTo(rx+nxstep*k, vymax);
+            ctx.stroke();    
+        }
     }
 
     ctx.fillStyle = "#FF0000";
@@ -670,8 +731,25 @@ function loop() {
     text(`rx = ${rx.toFixed(2)}`, rx+2/scale, vymax);
     ctx.textBaseline = "bottom";    
     text(`ry = ${ry.toFixed(2)}`, vxmin+2/scale, ry);
+
+    if(shakeAxis == 'x'){
+        ctx.textBaseline = "top";
+        ctx.font = `bold ${fontSize}px Consolas`;
+        ctx.textAlign = "right";
+        text(`ω = ${omega.toFixed(2)}`, rx+2/scale, vymax);    
+    }
+
+    
+    if(shakeAxis == 'y'){
+        ctx.textBaseline = "top";
+        ctx.font = `bold ${fontSize}px Consolas`;
+        ctx.textAlign = "left";
+        text(`ω = ${omega.toFixed(2)}`,  vxmin+2/scale, ry);    
+    }
+
     ctx.fillStyle = "#004433";
     ctx.textAlign = "left";
+
     rockets.forEach(function (r) {
         r.draw(ctx, scale, show_info);
     });

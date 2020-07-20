@@ -208,6 +208,26 @@ planck.testbed = function(opts, callback) {
                 }
                 drawHash += color;
             };
+            testbed.drawPath= function(points, color, lineWidth, offset) {
+                if (!points || !points.length) {
+                    return;
+                }
+                buffer.push(function(ctx) {
+                    ctx.lineWidth = lineWidth / testbed.ratio;
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y+offset);
+                    for (var i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y+offset);
+                    }
+                    ctx.strokeStyle = color;
+                    ctx.stroke();
+                });
+                drawHash += "segment"+Math.random();
+                // for (var i = 1; i < points.length; i++) {
+                //     drawHash += points[i].x + "," + points[i].y + ",";
+                // }
+                drawHash += color;
+            };
             testbed.drawAABB = function(aabb, color) {
                 buffer.push(function(ctx) {
                     ctx.beginPath();

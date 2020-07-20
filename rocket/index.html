@@ -230,31 +230,25 @@
                         <div class="form-group">
                             <textarea name="debug" class="form-control" id="debug" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off"
                                 spellcheck="false"></textarea>
-                        </div>
+                        </div> 
                         <div class="form-inline">
                             <label class="mb-2 mr-2" for="field-debug-amount">amount</label>
-                            <input type="text" class="form-control mb-2 mr-2" name="field-debug-amount" style="width:4rem" id="field-debug-amount" value="1">
+                            <input type="text" class="form-control mb-2 mr-2" name="field-debug-amount" style="width:4rem" id="field-debug-amount" value="10">
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-x" onclick="reset_r()">
+                                reset r
+                            </button>
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-x" onclick="shake('x')">
+                                shake x
+                            </button>
+                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-x" onclick="shake('y')">
+                                shake y
+                            </button>
                             <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-x" onclick="debug_step('x')">
                                 step x
                             </button>
                             <button type="button" class="btn btn-info mb-2 mr-2" id="debug-step-y" onclick="debug_step('y')">
                                 step y
                             </button>
-                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-ramp-x" onclick="debug_ramp_x()">
-                                ramp x
-                            </button>
-                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-ramp-y" onclick="debug_ramp_y()">
-                                ramp y
-                            </button>
-                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-acc-x" onclick="debug_acc_x()">
-                                acc x
-                            </button>
-                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-acc-y" onclick="debug_acc_y()">
-                                acc y
-                            </button>                            
-                            <button type="button" class="btn btn-info mb-2 mr-2" id="debug-mass-spawn" onclick="debug_mass_spawn()">
-                                Mass spawn
-                            </button>                            
                         </div>
                         <div class="form-group">
                             <textarea name="debug-out" class="form-control" id="debug-out" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off"

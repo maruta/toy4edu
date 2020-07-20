@@ -170,12 +170,14 @@ planck.testbed('Car', function (testbed) {
             let vx = (v.x * Math.cos(th) + v.y * Math.sin(th));
             let co = {
                 u: 0,
-                display: 'ERR'
+                display: 'ERR',
+                logSpeed: 1e-2
             };
             try {
-                co = car.controller(vx, cp.x, k * (1 / 60) - car.t0);
+                co = Object.assign(co,car.controller(vx, cp.x, k * (1 / 60) - car.t0))
             } catch (e) {}
-            car.ud = car.ud * 0.9 + co.controlInput * 0.1;
+            //car.ud = car.ud * 0.9 + co.controlInput * 0.1;
+            car.ud = co.controlInput
             if (car.ud > 0) {
                 car.springBack.setMotorSpeed(-100);
                 car.springBack.setMaxMotorTorque(car.ud);
@@ -187,6 +189,23 @@ planck.testbed('Car', function (testbed) {
                 deathnote.push(idx);
             }
             testbed.drawText(Vec2(cp.x, cp.y + 1.2), co.display, 'rgba(0,255,255,0.9)');
+            if(co.log){
+                if(!car.log){
+                    car.log = []
+                    car.plot = [...Array(co.log.length)].map(e => []);
+                    car.plotY = 0
+                }
+                car.log.unshift(co.log)
+
+                const colors = ['rgba(0,255,0,0.7)','rgba(255,255,0,0.7)']
+                for (let k = 0; k < co.log.length; k++) {
+                    car.plot[k].push({x:co.log[k],y:-car.plotY})                    
+                    testbed.drawPath(car.plot[k],colors[k],3,cp.y+car.plotY)                    
+                }
+
+                car.plotY += co.logSpeed         
+
+            }
         });
         deathnote.reverse();
         deathnote.forEach(function (idx) {
