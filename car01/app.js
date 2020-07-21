@@ -219,12 +219,12 @@ planck.testbed('Car', function (testbed) {
 
     testbed.step = function () {
         step();
+        if (testbed.activeKeys.right) {
+            testbed.x += 1;
+        } else if (testbed.activeKeys.left) {
+            testbed.x -= 1;
+        }
         if (editor.style.display === 'none') {
-            if (testbed.activeKeys.right) {
-                testbed.x += 1;
-            } else if (testbed.activeKeys.left) {
-                testbed.x -= 1;
-            }
             if (testbed.activeKeys.down) {
                 testbed.y += 1;
             } else if (testbed.activeKeys.up) {
@@ -242,7 +242,6 @@ planck.testbed('Car', function (testbed) {
 
     let buttonSpawn = document.getElementById('spawn');
     let checkbox = document.getElementById('autospawn');
-    checkbox.checked = false;
     buttonSpawn.addEventListener('click', function (event) {
         spawnFromUserCode();
     }, false);

@@ -25,6 +25,10 @@ if (window.location.hash) {
     var hash = window.location.hash.substr(2);
     documents[0].code = decode(hash);
     codeFromHash = true;
+    if(documents[0].code.startsWith("// autospawn") ){
+        let checkbox = document.getElementById('autospawn')
+        checkbox.checked = true
+    }
 }
 
 // editor
