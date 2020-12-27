@@ -447,9 +447,9 @@ function debug_mass_spawn_x(list) {
 
     let n = (list == undefined) ? designs.length : list.length;
 
-    let ny = 7;
+    let ny = 4;
     let nx = Math.ceil(n/ny);
-    nxstep = 30
+    nxstep = 5
     nxref = nx
     for (let k = 0; k < n; k++) {
         let idx = (list == undefined) ? k : list[k];
@@ -457,7 +457,7 @@ function debug_mass_spawn_x(list) {
         let ax = Math.floor((n-k-1)/ny);
         let ay = (n-k-1) % ny;
         let rx = ax*nxstep;
-        let ry = (-ay + ny / 2) * 10;
+        let ry = (-ay + ny / 2) * 3;
         d.rgen = (t, rx0, ry0) => math.matrix([
             [rx0 + rx],
             [ry]
@@ -513,16 +513,69 @@ function debug_mass_spawn_y(list) {
     rry = 0;
 }
 
+
+let step_log = [], id_table = {}
+
+function mass_step_x(width){
+    let t0 = t+10
+    omega = 2*Math.PI/10
+
+    rgen = function(){
+       if(t-t0 > 0){
+           rx = width
+       }else{
+           rx = 0
+       }
+    }
+    let k = 0
+    rockets.forEach(function (r) {
+        r.timer_int = -10;
+        r.e2 = 0;
+        r.timer = r.timer_int;
+        r.id = k
+        step_log[k] = {
+            name:r.pureName,
+            ex:[]
+        }
+        r.debug = (t, r) => {
+            r.timer_int += dt
+            r.timerStyle = "#e2041b"
+            r.e2 += r.ex*r.ex*dt/width/width
+            r.timer = r.e2
+            /*
+            if(r.timer_int <= 0 || Math.abs(r.ex)>0.02*width){
+                if(r.timer_int <= -5){
+                    r.timer = -5
+                }else{
+                    r.timer = r.timer_int 
+                }
+            }else if(r.timer_int >0){
+                r.timerStyle = "#3eb370"
+            }
+            */
+            step_log[r.id].ex.push(r.ex)
+        }
+        k++
+    }); 
+}
+
 function shake(v){
     let width = Number($('#field-debug-amount').val())
-    let t0 = t
+    let t0 = t + 10
     shakeAxis = v
     omega = 2*Math.PI/10
     if (v === 'x') {
         rgen = function(){
-            omega = 0.5//0.1+(t-t0)*(t-t0)*2e-5
-            rx = width*(1 - Math.cos(omega*(t-t0)))/2
-            rvx = width * omega * Math.sin(omega*(t-t0))/2
+            //omega = 0.5
+            if(t<t0){
+                omega = 0
+                rx = 0
+                rvx = 0
+            }else{
+                omega = 0.2+(t-t0)*(t-t0)*8e-5
+                rx = width*(1 - Math.cos(omega*(t-t0)))/2
+                rvx = width * omega * Math.sin(omega*(t-t0))/2
+            }
             // let vel = 2
             // let ph = (t-t0)<5 ?  0 : (t-t0-5)/2/(width/vel) % 1;
             // if(ph<0.5){
@@ -571,7 +624,7 @@ function spawn(design0, x0) {
         r.debug = design0.debug;
     }
     r.name = getDisplayName(design0);
-
+    r.pureName = design0.displayName
     rockets.push(r);
 }
 

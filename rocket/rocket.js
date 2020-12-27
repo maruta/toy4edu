@@ -53,12 +53,13 @@ class Rocket {
         let r = this.rgen(t, rx0, ry0);
         let rx = r.get([0, 0]);
         let ry = r.get([1, 0]);
-
+        
         const x = this.x.get([0, 0]),
             y = this.x.get([1, 0]),
             th = this.x.get([2, 0]);
 
         let ex = math.subtract(rx, x);
+        this.ex = ex
         let ey = math.subtract(ry, y);
         this.K.y.step(ey, h);
         this.K.x.step(ex, h);
@@ -135,6 +136,15 @@ class Rocket {
                 ctx.rotate(math.PI/2);
                 ctx.fillText(this.name, 0,0);
             }
+
+            if(this.timer != undefined){
+                    ctx.font = `bold ${fontSize}px BIZ UDPゴシック`;
+                    if(this.timerStyle){
+                        ctx.fillStyle = this.timerStyle;
+                    }
+                    ctx.fillText(this.timer.toFixed(3), W * 2, fontSize * (-1.2));   
+            }
+
             ctx.restore();
 
         }else if (show_info) {

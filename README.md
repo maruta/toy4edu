@@ -9,6 +9,7 @@ Toys for control education
     * Position Control
       * [P controller](https://maruta.github.io/toy4edu/car01/index.html#/hU/RCoMwDPyagg4mUR/ERzcZjH2FaAdCaaWmWv9+6Srt0IfBkV5zSS5h0MxTt8qEVTcGDSsgwAIrXYL4/SBtBwnq5ZTplUSthODaK28jexyVJJosrooc/IOpm3ry/4XgSFG7T9lSzMG3vkIGspyV/0eY0OBaL24ZfbXp3go1QXM0WsaVvsl40FNOBv1JJhzrMYzzJLrNizZD9RgtH5IijUVVG62IE6na3f0D)
       * [System Identification](https://maruta.github.io/toy4edu/car01/index.html#/bVDbCsIwDP2aQB04sk4ZPm4OwQef/IKhVQe1LV3r5t+bWty8wSFNck5uBSwBy840vWJQVBDC1YCQlwh8HcODVs5qKYWlNHA8eXVwrVbksltQcRzi42ZkxjYEKRxl9FWcm8DkNVlMM+AVpqtk17hLanTPSLTJEMNIPoP8u96OtVms6VrFXPJs+5KT4h9iA/8+PGF2PnxMscJ5q75Wnw7fKuNdPN2PnxJxbDsjm3skgfMnPhRSnwO7rMIXWVjWv/zeCHEkERfzxUQV9bQi+eQU9bh1+QA=)
+      * [PD/PID Comparison](https://maruta.github.io/toy4edu/car01/#/1VTNasMwDH4a0ybQkR9Y2LFp6AiDsVcoiQuGYBvH7tK3n2Q5caA79JDDBoojy9KnT5KTTsnRsiIz8LCygTUHpTiB8qEXW/aSB1v/i0082nob8Vhxfs1YdgQZ9eVb7llV4xbzBJnA90gsMPoetrlngpFvVzFYbt6NcrqVPZ/I4ZAvDp2S1qhh4IaOrk52VigJ6v5GsBO9bIJJHzisZeDI38W6KAeI4dYZGQG8MaZvpXaWCLiFGkkvRj1c7nS4+1SwnihoF92qhpUzLuigVE0ym/5t+/xNShEKr9kBsZKg+AuFR7fNW/zVPN1YIiz4auB/tue+HiIc+a4bO/tQOUVNHjyFb3LrkRF++AWk1MKy3n6S7TOj/AE=)
 2. [Step response of 2nd order system](https://maruta.github.io/toy4edu/stepresp2/index.html)
 3. [Pole and impulse response](https://maruta.github.io/toy4edu/poleresp/index.html)  
   Use [Ctrl]/[Shift]/[Alt] keys to fix damping ratio / real part / imgainary part of poles.
