@@ -53,11 +53,13 @@
         const mode_none = 0,
             mode_const_z = 1,
             mode_const_alpha = 2,
-            mode_const_omega = 3;
+            mode_const_omega = 3,
+            mode_const_wn = 4;
         let mode = mode_none;
         let fixed_z = 0,
             fixed_alpha = 0,
-            fixed_omega = 0;
+            fixed_omega = 0,
+            fixed_wn = 0;
 
 
         function getMousePos(canvas, evt) {
@@ -97,10 +99,13 @@
             } else if (e.shiftKey && mode != mode_const_alpha) {
                 mode = mode_const_alpha;
                 fixed_alpha = r;
-            } else if (e.altKey && mode != mode_const_omega) {
+            } else if (e.altKey && mode != mode_const_wn) {
+                mode = mode_const_wn;
+                fixed_wn = Math.sqrt(i*i+r*r);
+            }/* else if (e.altKey && mode != mode_const_omega) {
                 mode = mode_const_omega;
                 fixed_omega = i;
-            }
+            }*/
 
             if (mode == mode_const_z) {
                 let ip = r * Math.cos(fixed_z) + i * Math.sin(fixed_z);
@@ -112,7 +117,13 @@
             }
             if (mode == mode_const_omega) {
                 i = fixed_omega;
-            }
+            } 
+            if (mode == mode_const_wn) {
+                const arg = Math.atan2(i, r);
+                r = fixed_wn*Math.cos(arg);
+                i = fixed_wn*Math.sin(arg);
+            } 
+
             if (ord == 1) {
                 katex.render(
                     `
@@ -254,6 +265,12 @@
                 pctx.lineTo(r2x(rmax), i2y(i));
                 pctx.moveTo(r2x(rmin), i2y(-i));
                 pctx.lineTo(r2x(rmax), i2y(-i));
+                pctx.stroke();
+            }
+
+            if (mode == mode_const_wn) {
+                pctx.beginPath();
+                pctx.arc(r2x(0), i2y(0),r2x(fixed_wn)-r2x(0), 0, 2*Math.PI);
                 pctx.stroke();
             }
 
