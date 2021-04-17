@@ -188,7 +188,11 @@ planck.testbed('Car', function (testbed) {
             if (cp.y < -20) {
                 deathnote.push(idx);
             }
-            testbed.drawText(Vec2(cp.x, cp.y + 1.2), co.display, 'rgba(0,255,255,0.9)');
+            let lines = co.display.split('\n')
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                testbed.drawText(Vec2(cp.x, cp.y + 1.2*(lines.length-i)), line, 'rgba(0,255,255,0.9)');                                
+            }
             if(co.log){
                 if(!car.log){
                     car.log = []
