@@ -251,3 +251,7 @@ input::selection{
     background:rgba(0,255,255,0.9);
     color: rgba(0,127,127,0.9);
 }
+
+.cm-s-cobalt.CodeMirror { background: rgba(0, 34, 64, 0.251); color: white; }
+.cm-s-cobalt div.CodeMirror-selected { background: rgba(179, 101, 57, 0.502); }
+.cm-s-cobalt .CodeMirror-gutters { background: rgba(0, 34, 64, 0.502); border-right: 1px solid #aaa; }
