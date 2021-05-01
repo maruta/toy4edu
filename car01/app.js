@@ -138,10 +138,16 @@ planck.testbed('Car', function (testbed) {
         carList.push(car)
     };
 
+    function view(x, y,height){
+        if( x != undefined) testbed.x = x
+        if( y != undefined) testbed.y = -y
+        if( height != undefined) testbed.height = height
+    }
+
     function spawnFromUserCode() {
         try {
-            user_code = Function('spawn', codemirror.getValue());
-            user_code(spawn);
+            user_code = Function('spawn', 'view', codemirror.getValue());
+            user_code(spawn,view);
         } catch (e) {}
     }
 
@@ -244,7 +250,7 @@ planck.testbed('Car', function (testbed) {
                 testbed.height *= 0.99;
             }
         }
-        testbed.status('x: ' + testbed.x.toFixed(0) + ', y: ' + testbed.y.toFixed(0) + ', vh: ' + testbed.height.toFixed(2));
+        testbed.status('x: ' + testbed.x.toFixed(0) + ', y: ' + (-testbed.y).toFixed(0) + ', vh: ' + testbed.height.toFixed(2));
     };
     testbed.info('ESC: Toggle Editor/Player, ↑↓←→: Move, Z/X: Zoom');
 
