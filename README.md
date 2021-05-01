@@ -1,6 +1,5 @@
-# toy4edu
-Toys for control education
-
+# Toys for control education
+Teaching materials for control engineering education that run in web browsers
 1. [Car](https://maruta.github.io/toy4edu/car01/index.html)
     * Speed Control
       * [FF controller](https://maruta.github.io/toy4edu/car01/index.html#/hU/RCoMwDPyagO5BSqvIHt1EGH6FaAdC10pNnfv7RSP2ZTAIyeUuSXsgmwtI0QV089S9LaiKWmd7TYWUBkS1CwmUN8Igri+eyUHemeidRe+M0Z6VZ7A9js4STJZtSoqVC6aUjkMEfoXRSNlvjaopF7zZnoTIRF6A+n8jnCste6Gr6vBA4TUGb+N/djK6edgpIPsJp1OOYZwn031YXDJ0zbjqIZFpHCrr+BRhAmWdMvUF)
