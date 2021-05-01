@@ -223,7 +223,10 @@ planck.testbed('Car', function (testbed) {
 
     testbed.step = function () {
         step();
-
+        if(spawnOnce){
+            spawnFromUserCode()
+            spawnOnce = false
+        }
         if (editor.style.display === 'none') {
             if (testbed.activeKeys.right) {
                 testbed.x += 1;
