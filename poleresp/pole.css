@@ -1,4 +1,6 @@
 body, html{
+  padding:0;
+  margin:0;
   height:100%;
   overflow: hidden;
 }
@@ -9,15 +11,18 @@ body, html{
 input{
   width:100%;
 }
+div, canvas{
+  margin:0;
+  padding:0;
+}
 #polepane{
   flex:0.5 0 0;
   overflow:hidden;
-  padding:10px;
+  padding:0;
   height:100vh;
 }
 #wrap-polemap{
   height:100vh;
-
 }
 #wrap-resp{
   height:100vh;  
@@ -48,4 +53,9 @@ label{
 #params{
   right:0;
   bottom:0;
+}
+
+#polemap{
+  height:100%;
+  width:100%;
 }

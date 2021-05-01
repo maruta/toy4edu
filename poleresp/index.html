@@ -40,6 +40,7 @@
         let pcanvas = document.getElementById('polemap');
 
         let ph = 0, pw = 0;
+        let dpr = 1;
         const imax = 8, imin = -imax;
         let rmin=0,rmax=0;
         let pctx = pcanvas.getContext("2d");
@@ -64,12 +65,12 @@
 
         function getMousePos(canvas, evt) {
             var rect = canvas.getBoundingClientRect(),
-                scaleX = canvas.width / rect.width,
-                scaleY = canvas.height / rect.height;
+                scaleX = canvas.width / rect.width ,
+                scaleY = canvas.height / rect.height ;
 
             return {
-                x: (evt.clientX - rect.left) * scaleX,
-                y: (evt.clientY - rect.top) * scaleY
+                x: (evt.clientX - rect.left/dpr) * scaleX,
+                y: (evt.clientY - rect.top/dpr) * scaleY
             }
         }
 
@@ -171,8 +172,8 @@
             pctx.clearRect(0, 0, pw, ph);
             // draw polemap grid
             pctx.strokeStyle = 'rgb(0,0,0)';
-            pctx.lineWidth = 1;
-            pctx.font = "24pt Meiryo";
+            pctx.lineWidth = 1*dpr;
+            pctx.font = (24*dpr.toFixed(0))+"pt sans-serif";
             pctx.textBaseline = "top";
             pctx.textAlign = "center";
             for (let r = Math.ceil(rmin); r <= rmax; r = r + 1) {
@@ -200,7 +201,7 @@
                 pctx.moveTo(r2x(rmin), i2y(i));
                 pctx.lineTo(r2x(rmax), i2y(i));
                 if (i != 0) {
-                    pctx.fillText(i + 'j', r2x(0) - 2, i2y(i))
+                    pctx.fillText(i + 'j', r2x(0) - 2*dpr, i2y(i))
                 }
                 pctx.stroke();
             }
@@ -211,38 +212,38 @@
             pctx.lineTo(r2x(rmax), i2y(0));
             pctx.textBaseline = "bottom";
             pctx.textAlign = "left";
-            pctx.fillText(0, r2x(0) + 2, i2y(0) + 2);
+            pctx.fillText(0, r2x(0) + 2*dpr, i2y(0) + 2*dpr);
             pctx.stroke();
 
             // plot pole
             pctx.beginPath();
             pctx.strokeStyle = 'rgb(255,0,0)';
-            pctx.lineWidth = 5;
+            pctx.lineWidth = 5*dpr;
 
             if (ord == 1) {
-                pctx.moveTo(r2x(r) - 10, i2y(0) - 10);
-                pctx.lineTo(r2x(r) + 10, i2y(0) + 10);
+                pctx.moveTo(r2x(r) - 10*dpr, i2y(0) - 10*dpr);
+                pctx.lineTo(r2x(r) + 10*dpr, i2y(0) + 10*dpr);
                 pctx.stroke();
-                pctx.moveTo(r2x(r) + 10, i2y(0) - 10);
-                pctx.lineTo(r2x(r) - 10, i2y(0) + 10);
+                pctx.moveTo(r2x(r) + 10*dpr, i2y(0) - 10*dpr);
+                pctx.lineTo(r2x(r) - 10*dpr, i2y(0) + 10*dpr);
                 pctx.stroke();
             } else {
-                pctx.moveTo(r2x(r) - 10, i2y(i) - 10);
-                pctx.lineTo(r2x(r) + 10, i2y(i) + 10);
+                pctx.moveTo(r2x(r) - 10*dpr, i2y(i) - 10*dpr);
+                pctx.lineTo(r2x(r) + 10*dpr, i2y(i) + 10*dpr);
                 pctx.stroke();
-                pctx.moveTo(r2x(r) + 10, i2y(i) - 10);
-                pctx.lineTo(r2x(r) - 10, i2y(i) + 10);
+                pctx.moveTo(r2x(r) + 10*dpr, i2y(i) - 10*dpr);
+                pctx.lineTo(r2x(r) - 10*dpr, i2y(i) + 10*dpr);
                 pctx.stroke();
-                pctx.moveTo(r2x(r) - 10, i2y(-i) - 10);
-                pctx.lineTo(r2x(r) + 10, i2y(-i) + 10);
+                pctx.moveTo(r2x(r) - 10*dpr, i2y(-i) - 10*dpr);
+                pctx.lineTo(r2x(r) + 10*dpr, i2y(-i) + 10*dpr);
                 pctx.stroke();
-                pctx.moveTo(r2x(r) + 10, i2y(-i) - 10);
-                pctx.lineTo(r2x(r) - 10, i2y(-i) + 10);
+                pctx.moveTo(r2x(r) + 10*dpr, i2y(-i) - 10*dpr);
+                pctx.lineTo(r2x(r) - 10*dpr, i2y(-i) + 10*dpr);
                 pctx.stroke();
             }
 
             pctx.strokeStyle = 'rgb(0,128,0)';
-            pctx.lineWidth = 1;
+            pctx.lineWidth = 1*dpr;
             if (mode == mode_const_z) {
                 pctx.beginPath();
                 pctx.moveTo(r2x(0), i2y(0 * Math.tan(fixed_z)));
@@ -282,7 +283,7 @@
             }
 
             const tf = 6,
-                xm = 70;
+                xm = 70*dpr;
 
             let t2x = function (t) {
                 return xm + t / tf * (rw - xm * 2);
@@ -307,31 +308,31 @@
 
             // draw grid
             rctx.strokeStyle = 'rgb(0,0,0)';
-            rctx.lineWidth = 2;
-            rctx.font = "24pt Meiryo";
+            rctx.lineWidth = 2*dpr;
+            rctx.font = (24*dpr.toFixed(0))+"pt sans-serif";
             rctx.textBaseline = "top";
             rctx.textAlign = "center";
             for (var t = 1; t < tf; t = t + 1) {
                 rctx.beginPath();
                 rctx.strokeStyle = 'rgb(0,0,0)';
                 rctx.moveTo(t2x(t), y2sy(0));
-                rctx.lineTo(t2x(t), y2sy(0) + 15);
+                rctx.lineTo(t2x(t), y2sy(0) + 15*dpr);
                 rctx.stroke();
-                rctx.fillText(t, t2x(t), y2sy(0) + 15);
+                rctx.fillText(t, t2x(t), y2sy(0) + 15*dpr);
             }
             rctx.textBaseline = "middle";
             rctx.textAlign = "left";
-            rctx.fillText('t', t2x(tf) + 10, y2sy(0));
+            rctx.fillText('t', t2x(tf) + 10*dpr, y2sy(0));
 
             rctx.strokeStyle = 'rgb(0,0,0)';
-            rctx.lineWidth = 2;
+            rctx.lineWidth = 2*dpr;
             rctx.beginPath();
             rctx.moveTo(t2x(0), y2sy(0));
             rctx.lineTo(t2x(tf), y2sy(0));
             rctx.stroke();
 
             let gy = Math.pow(10, Math.floor(Math.log10(ymax * 0.9)));
-            rctx.lineWidth = 1;
+            rctx.lineWidth = 1*dpr;
             rctx.strokeStyle = 'rgb(200,200,255)';
             rctx.beginPath();
             rctx.moveTo(t2x(0), y2sy(gy));
@@ -343,20 +344,20 @@
             rctx.stroke();
             rctx.strokeStyle = 'rgb(0,0,0)';
             rctx.textAlign = "right";
-            rctx.fillText('0', t2x(0) - 10, y2sy(0));
-            rctx.fillText(gy, t2x(0) - 10, y2sy(gy));
-            rctx.fillText(-gy, t2x(0) - 10, y2sy(-gy));
+            rctx.fillText('0', t2x(0) - 10*dpr, y2sy(0));
+            rctx.fillText(gy, t2x(0) - 10*dpr, y2sy(gy));
+            rctx.fillText(-gy, t2x(0) - 10*dpr, y2sy(-gy));
 
 
             rctx.beginPath();
-            rctx.lineWidth = 2;
+            rctx.lineWidth = 2*dpr;
             rctx.moveTo(t2x(0), y2sy(-ymax * 0.9));
             rctx.lineTo(t2x(0), y2sy(ymax * 0.9));
             rctx.stroke();
 
 
             rctx.strokeStyle = 'rgb(0,0,255)';
-            rctx.lineWidth = 3;
+            rctx.lineWidth = 3*dpr;
             rctx.beginPath();
             rctx.moveTo(t2x(0), y2sy(y(0)));
             for (let tx = t2x(0) + 1; tx <= t2x(tf); tx++) {
@@ -372,7 +373,7 @@
             if (ord == 2) {
                 rctx.strokeStyle = 'rgb(0,0,0)';
                 rctx.setLineDash([2, 2]);
-                rctx.lineWidth = 1;
+                rctx.lineWidth = 1*dpr;
                 rctx.beginPath();
                 rctx.moveTo(t2x(0), y2sy(y(0)));
                 for (let tx = t2x(0) + 1; tx <= t2x(tf); tx++) {
@@ -400,10 +401,11 @@
         }
 
         function resize_func() {
-            pcanvas.height = wrapper.clientHeight;
-            pcanvas.width = wrapper.clientWidth;
-            rcanvas.height = wwrapper.clientHeight;
-            rcanvas.width = wwrapper.clientWidth;
+            dpr = window.devicePixelRatio;
+            pcanvas.height = wrapper.clientHeight * dpr;
+            pcanvas.width = wrapper.clientWidth * dpr;
+            rcanvas.height = wwrapper.clientHeight * dpr;
+            rcanvas.width = wwrapper.clientWidth * dpr;
 
             ph = pcanvas.height;
             pw = pcanvas.width;
