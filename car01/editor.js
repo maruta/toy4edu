@@ -278,7 +278,7 @@ planck.testbed = function (opts, callback) {
 
         testbed._info = function (text) {
             if (_lastInfo !== text) {
-                info.innerText = _lastInfo = text;
+                info.innerHTML = _lastInfo = text;
             }
         };
 

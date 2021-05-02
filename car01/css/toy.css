@@ -222,7 +222,7 @@ input:checked+.slider:before {
 #info {
     position: absolute;
     bottom: 2px;
-    color: #fff;
+    color: rgba(0,255,255,0.9);;
     font-family: 'Fira Code', Consolas, monospace;
     font-size: 20px;
 }
@@ -231,7 +231,7 @@ input:checked+.slider:before {
     position: absolute;
     bottom: 2px;
     right: 2px;
-    color: #fff;
+    color: rgba(0,255,255,0.9);;
     font-family: 'Fira Code', Consolas, monospace;
     font-size: 20px;
 }
@@ -250,6 +250,14 @@ input :focus{
 input::selection{
     background:rgba(0,255,255,0.9);
     color: rgba(0,127,127,0.9);
+}
+
+kbd {
+    border-radius: 2px;
+    padding: 1px 4px 0;
+    margin: 0 3px;
+    font-family: 'Fira Code', Consolas, monospace;
+    border: 2px solid rgba(0,255,255,0.9);
 }
 
 .cm-s-cobalt.CodeMirror { background: rgba(0, 34, 64, 0.251); color: white; }

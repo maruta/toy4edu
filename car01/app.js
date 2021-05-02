@@ -251,8 +251,13 @@ planck.testbed('Car', function (testbed) {
             }
         }
         testbed.status('x: ' + testbed.x.toFixed(0) + ', y: ' + (-testbed.y).toFixed(0) + ', vh: ' + testbed.height.toFixed(2));
+        if (editor.style.display === ''){
+            testbed.info('<kbd>ESC</kbd>Toggle Editor/Player');
+        }else{
+            testbed.info('<kbd>ESC</kbd>Toggle Editor/Player, <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>Move, <kbd>Z</kbd><kbd>X</kbd>Zoom, <span class="material-icons-outlined" style="vertical-align:text-bottom;">mouse</span>Interact');
+        }        
     };
-    testbed.info('ESC: Toggle Editor/Player, ↑↓←→: Move, Z/X: Zoom');
+
 
     let buttonSpawn = document.getElementById('spawn');
     let checkbox = document.getElementById('autospawn');
