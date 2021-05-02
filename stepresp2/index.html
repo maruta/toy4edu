@@ -46,7 +46,7 @@
     <script>
         let wrapper = document.getElementById('wrapper');
         let canvas = document.getElementById('resp');
-        let height =0, width = 0;
+        let height = 0, width = 0;
         let ctx = canvas.getContext("2d");
 
 
@@ -62,12 +62,12 @@
                 `
                     \\begin{aligned}
                         G(s)&=\\frac{K\\omega_{\\mathrm{n}}^2}{s^2+2\\zeta\\omega_{\\mathrm{n}}s+\\omega_{\\mathrm{n}}^2}\\\\
-                            &=\\frac{${(K*w*w).toFixed(3)}}{s^2+${(2*z*w).toFixed(3)}s+${(w*w).toFixed(3)}}
+                            &=\\frac{${(K * w * w).toFixed(3)}}{s^2+${(2 * z * w).toFixed(3)}s+${(w * w).toFixed(3)}}
                     \\end{aligned}
                     `,
                 document.getElementById('tf'), {
-                    displayMode: true
-                });
+                displayMode: true
+            });
 
             const tf = 15,
                 t0x = 100,
@@ -168,8 +168,8 @@
         function resize_func() {
             canvas.height = wrapper.clientHeight * 2;
             canvas.width = wrapper.clientWidth * 2;
-            height = canvas.height,
-            width = canvas.width;
+            height = canvas.height
+            width = canvas.width
             update();
         }
         $(window).resize(resize_func);
