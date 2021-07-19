@@ -440,24 +440,36 @@ function reset_r(){
     rgen = rgen_manual
 }
 
-function debug_mass_spawn_x(list) {
+function debug_mass_spawn_x(list, ny, xstep, ystep, y0) {
     refcursor = REFCURSOR.X;
     getDisplayName = (r) => r.displayNameX;
     show_info = 0;
 
     let n = (list == undefined) ? designs.length : list.length;
 
-    let ny = 4;
+    if(ny==undefined){
+        ny = 4;
+    }
+
+    if(xstep==undefined){
+        xstep = 5;
+    }
+
+    if(ystep==undefined){
+        ystep = 5;
+    }
+
+    if(y0 ==undefined) y0=0;
     let nx = Math.ceil(n/ny);
-    nxstep = 5
-    nxref = nx
+    nxstep = xstep;
+    nxref = nx;
     for (let k = 0; k < n; k++) {
         let idx = (list == undefined) ? k : list[k];
         d = Object.assign({}, designs[idx]);
         let ax = Math.floor((n-k-1)/ny);
         let ay = (n-k-1) % ny;
         let rx = ax*nxstep;
-        let ry = (-ay + ny / 2) * 3;
+        let ry = (-ay + ny / 2) * ystep + y0;
         d.rgen = (t, rx0, ry0) => math.matrix([
             [rx0 + rx],
             [ry]
@@ -481,7 +493,8 @@ function debug_mass_spawn_x(list) {
 }
 
 
-function debug_mass_spawn_y(list) {
+function debug_mass_spawn_y(list,xs) {
+    if(xs==undefined) xs=5;
     refcursor = REFCURSOR.Y;
     getDisplayName = (r) => r.displayNameY;
     let n = (list == undefined) ? designs.length : list.length;
@@ -489,7 +502,7 @@ function debug_mass_spawn_y(list) {
     for (let k = 0; k < n; k++) {
         let idx = (list == undefined) ? k : list[k];
         d = Object.assign({}, designs[idx]);
-        let rx = (k - n / 2) * 5;
+        let rx = (k - n / 2) * xs;
         let ry = 0;
         d.rgen = (t, rx0, ry0) => math.matrix([
             [rx],
@@ -572,7 +585,8 @@ function shake(v){
                 rx = 0
                 rvx = 0
             }else{
-                omega = 0.2+(t-t0)*(t-t0)*8e-5
+                omega = 0.2+(t-t0)*(t-t0)*4e-5
+//                omega = 0.2+(t-t0)*(t-t0)*8e-5
                 rx = width*(1 - Math.cos(omega*(t-t0)))/2
                 rvx = width * omega * Math.sin(omega*(t-t0))/2
             }
