@@ -28,10 +28,12 @@ if (window.location.hash) {
     documents[0].code = decode(hash);
     codeFromHash = true;
     if(documents[0].code.startsWith("/* autospawn: true */") ){
-        let checkbox = document.getElementById('autospawn')
-        checkbox.checked = true
+        let checkbox = document.getElementById('autospawn');
+        checkbox.checked = true;
+        toggle();
     }else if(documents[0].code.startsWith("/* autospawn: once */")){
-        spawnOnce = true
+        spawnOnce = true;
+        toggle();
     }
 }
 
