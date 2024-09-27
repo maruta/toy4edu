@@ -30,10 +30,8 @@ if (window.location.hash) {
     if(documents[0].code.startsWith("/* autospawn: true */") ){
         let checkbox = document.getElementById('autospawn');
         checkbox.checked = true;
-        toggle();
     }else if(documents[0].code.startsWith("/* autospawn: once */")){
         spawnOnce = true;
-        toggle();
     }
 }
 
