@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blank Bode Plot Generator</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif; margin: 0; padding: 16px; background: #f5f5f5; color: #222; }
+h1 { margin: 0 0 12px; font-size: 1.25em; }
+.container { display: grid; grid-template-columns: 400px 1fr; gap: 16px; }
+@media (max-width: 920px) { .container { grid-template-columns: 1fr; } }
+.panel { background: white; padding: 12px; border-radius: 6px; border: 1px solid #ddd; }
+fieldset { margin: 0 0 8px; padding: 6px 10px 8px; border: 1px solid #ccc; border-radius: 4px; }
+legend { padding: 0 4px; font-weight: bold; font-size: 0.9em; color: #444; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+label { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; margin: 2px 0; gap: 6px; }
+input[type="number"], input[type="text"], select { width: 110px; padding: 2px 4px; font-size: 0.9em; box-sizing: border-box; }
+button { padding: 10px 16px; font-size: 1em; cursor: pointer; background: #2196f3; color: white; border: none; border-radius: 4px; width: 100%; margin-top: 6px; }
+button:hover { background: #1976d2; }
+#preview { background: white; padding: 10px; border: 1px solid #eee; text-align: center; overflow: auto; min-height: 200px; }
+#preview svg { max-width: 100%; height: auto; display: inline-block; }
+.note { font-size: 0.78em; color: #666; margin: 6px 0 0; line-height: 1.4; }
+h3 { margin: 0 0 8px; font-size: 1em; }
+.full { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<h1>Blank Bode Plot Generator</h1>
+<div class="container">
+  <div class="panel">
+    <fieldset>
+      <legend>Gain axis [dB]</legend>
+      <div class="grid2">
+        <label>Min<input type="number" id="gainMin" value="-70" step="10"></label>
+        <label>Max<input type="number" id="gainMax" value="30" step="10"></label>
+        <label>Major step<input type="number" id="gainTic" value="20" step="5" min="1"></label>
+        <label>Minor divs<input type="number" id="gainMtic" value="2" min="1" step="1"></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Phase axis [deg]</legend>
+      <div class="grid2">
+        <label>Min<input type="number" id="phaseMin" value="-225" step="15"></label>
+        <label>Max<input type="number" id="phaseMax" value="45" step="15"></label>
+        <label>Major step<input type="number" id="phaseTic" value="45" step="15" min="1"></label>
+        <label>Minor divs<input type="number" id="phaseMtic" value="3" min="1" step="1"></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Frequency axis (log)</legend>
+      <div class="grid2">
+        <label>Min<input type="number" id="freqMin" value="0.01" step="any" min="0"></label>
+        <label>Max<input type="number" id="freqMax" value="100" step="any" min="0"></label>
+        <label>Unit<input type="text" id="freqUnit" value="rad/s"></label>
+        <label>Notation
+          <select id="freqNotation">
+            <option value="plain" selected>0.01, 0.1, 1...</option>
+            <option value="sci">10^-2, 10^-1...</option>
+          </select>
+        </label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Size &amp; font</legend>
+      <div class="grid2">
+        <label>Width [cm]<input type="number" id="widthCm" value="15" step="0.5" min="2"></label>
+        <label>Height [cm]<input type="number" id="heightCm" value="15" step="0.5" min="2"></label>
+        <label>Font size [pt]<input type="number" id="fontSize" value="10" step="0.5" min="4"></label>
+        <label>Font family<input type="text" id="fontFamily" value="Times New Roman"></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Lines &amp; grid</legend>
+      <div class="grid2">
+        <label>Axis width [pt]<input type="number" id="axisLw" value="1.0" step="0.1" min="0.1"></label>
+        <label>Major grid [pt]<input type="number" id="gridLw" value="0.5" step="0.1" min="0.1"></label>
+        <label>Minor grid [pt]<input type="number" id="minorLw" value="0.25" step="0.05" min="0.05"></label>
+        <label>Major style
+          <select id="gridStyle">
+            <option value="solid">solid</option>
+            <option value="dashed" selected>dashed</option>
+            <option value="dotted">dotted</option>
+          </select>
+        </label>
+        <label>Minor style
+          <select id="minorGridStyle">
+            <option value="none">none</option>
+            <option value="solid">solid</option>
+            <option value="dashed">dashed</option>
+            <option value="dotted" selected>dotted</option>
+          </select>
+        </label>
+        <label>Frame
+          <select id="boxStyle">
+            <option value="box" selected>box</option>
+            <option value="axes">L-shape</option>
+          </select>
+        </label>
+      </div>
+    </fieldset>
+    <button id="downloadBtn">Download SVG</button>
+    <p class="note">SVG user units are 1 unit = 1 pt, so the values you enter for line widths and font size match the printed physical size.</p>
+  </div>
+  <div class="panel">
+    <h3>Preview</h3>
+    <div id="preview"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const PT_PER_CM = 72 / 2.54;
+const $ = (id) => document.getElementById(id);
+
+function cfg() {
+  return {
+    gainMin: parseFloat($('gainMin').value),
+    gainMax: parseFloat($('gainMax').value),
+    gainTic: parseFloat($('gainTic').value),
+    gainMtic: Math.max(1, parseInt($('gainMtic').value) || 1),
+    phaseMin: parseFloat($('phaseMin').value),
+    phaseMax: parseFloat($('phaseMax').value),
+    phaseTic: parseFloat($('phaseTic').value),
+    phaseMtic: Math.max(1, parseInt($('phaseMtic').value) || 1),
+    freqMin: parseFloat($('freqMin').value),
+    freqMax: parseFloat($('freqMax').value),
+    freqUnit: $('freqUnit').value,
+    freqNotation: $('freqNotation').value,
+    widthCm: parseFloat($('widthCm').value),
+    heightCm: parseFloat($('heightCm').value),
+    fontSize: parseFloat($('fontSize').value),
+    fontFamily: $('fontFamily').value,
+    axisLw: parseFloat($('axisLw').value),
+    gridLw: parseFloat($('gridLw').value),
+    minorLw: parseFloat($('minorLw').value),
+    gridStyle: $('gridStyle').value,
+    minorGridStyle: $('minorGridStyle').value,
+    boxStyle: $('boxStyle').value,
+  };
+}
+
+function dashAttr(style, lw) {
+  if (style === 'solid' || style === 'none') return '';
+  if (style === 'dashed') return ` stroke-dasharray="${(lw*4).toFixed(2)},${(lw*4).toFixed(2)}"`;
+  if (style === 'dotted') return ` stroke-dasharray="${lw.toFixed(2)},${(lw*2).toFixed(2)}"`;
+  return '';
+}
+
+function fmtNum(v) {
+  if (Math.abs(v) < 1e-12) return '0';
+  if (Math.abs(v - Math.round(v)) < 1e-9) return Math.round(v).toString();
+  return parseFloat(v.toPrecision(6)).toString();
+}
+
+function xmlEscape(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildSVG() {
+  const c = cfg();
+  if (!(c.freqMin > 0) || !(c.freqMax > 0) || c.freqMin >= c.freqMax) throw new Error('Invalid frequency range');
+  if (c.gainMin >= c.gainMax) throw new Error('Invalid gain range');
+  if (c.phaseMin >= c.phaseMax) throw new Error('Invalid phase range');
+
+  const W = c.widthCm * PT_PER_CM;
+  const H = c.heightCm * PT_PER_CM;
+  const fs = c.fontSize;
+
+  const mL = fs * 4.8;
+  const mR = fs * 1.5;
+  const mT = fs * 1.0;
+  const mB = fs * 3.5;
+  const gap = fs * 1.4;
+  const plotW = W - mL - mR;
+  const plotH = (H - mT - mB - gap) / 2;
+  if (plotW <= 0 || plotH <= 0) throw new Error('Plot size is too small');
+
+  let svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+  svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${c.widthCm}cm" height="${c.heightCm}cm" viewBox="0 0 ${W.toFixed(2)} ${H.toFixed(2)}" font-family="${xmlEscape(c.fontFamily)}" font-size="${fs}">\n`;
+  svg += drawSubplot(c, mL, mT, plotW, plotH, c.gainMin, c.gainMax, c.gainTic, c.gainMtic, 'Gain [dB]', false, '');
+  svg += drawSubplot(c, mL, mT + plotH + gap, plotW, plotH, c.phaseMin, c.phaseMax, c.phaseTic, c.phaseMtic, 'Phase [deg]', true, `Frequency [${c.freqUnit}]`);
+  svg += '</svg>\n';
+  return svg;
+}
+
+function drawSubplot(c, x, y, w, h, yMin, yMax, yTic, yMtic, yLabel, showXLabels, xLabel) {
+  const fs = c.fontSize;
+  const xMin = c.freqMin, xMax = c.freqMax;
+  const lxMin = Math.log10(xMin), lxMax = Math.log10(xMax);
+  const xToCoord = v => x + (Math.log10(v) - lxMin) / (lxMax - lxMin) * w;
+  const yToCoord = v => y + h - (v - yMin) / (yMax - yMin) * h;
+  const eps = 1e-9;
+  let s = '';
+  const gridDash = dashAttr(c.gridStyle, c.gridLw);
+  const minorDash = dashAttr(c.minorGridStyle, c.minorLw);
+
+  // major Y values inside (yMin, yMax)
+  const yMajorVals = [];
+  const yTicStart = Math.ceil(yMin / yTic - eps) * yTic;
+  for (let v = yTicStart; v <= yMax + eps; v += yTic) yMajorVals.push(v);
+
+  // minor Y values
+  const yMinorVals = [];
+  if (yMtic > 1) {
+    const step = yTic / yMtic;
+    const start = Math.ceil(yMin / step - eps) * step;
+    for (let v = start; v <= yMax + eps; v += step) {
+      // skip majors
+      const onMajor = yMajorVals.some(mv => Math.abs(mv - v) < step * 1e-3);
+      if (!onMajor) yMinorVals.push(v);
+    }
+  }
+
+  // major X decade values
+  const xMajorVals = [];
+  const dMin = Math.ceil(lxMin - eps);
+  const dMax = Math.floor(lxMax + eps);
+  for (let d = dMin; d <= dMax; d++) {
+    const v = Math.pow(10, d);
+    if (v >= xMin - 1e-12 && v <= xMax + 1e-12) xMajorVals.push({ v, d });
+  }
+  // minor X values: 2..9 in each decade
+  const xMinorVals = [];
+  for (let d = Math.floor(lxMin - eps); d <= Math.ceil(lxMax + eps); d++) {
+    for (let m = 2; m <= 9; m++) {
+      const v = m * Math.pow(10, d);
+      if (v > xMin + 1e-12 && v < xMax - 1e-12) xMinorVals.push(v);
+    }
+  }
+
+  // === gridlines ===
+  // minor first (so major overlays)
+  if (c.minorGridStyle !== 'none') {
+    for (const v of yMinorVals) {
+      if (v <= yMin + eps || v >= yMax - eps) continue;
+      const yc = yToCoord(v);
+      s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.minorLw}"${minorDash}/>\n`;
+    }
+    for (const v of xMinorVals) {
+      const xc = xToCoord(v);
+      s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.minorLw}"${minorDash}/>\n`;
+    }
+  }
+  // major gridlines (skip endpoints since border draws them)
+  for (const v of yMajorVals) {
+    if (v <= yMin + eps || v >= yMax - eps) continue;
+    const yc = yToCoord(v);
+    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.gridLw}"${gridDash}/>\n`;
+  }
+  for (const o of xMajorVals) {
+    if (o.v <= xMin + 1e-12 || o.v >= xMax - 1e-12) continue;
+    const xc = xToCoord(o.v);
+    s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.gridLw}"${gridDash}/>\n`;
+  }
+
+  // === border / axes ===
+  if (c.boxStyle === 'box') {
+    s += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" fill="none" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+  } else {
+    // left and bottom only
+    s += `<line x1="${x.toFixed(2)}" y1="${y.toFixed(2)}" x2="${x.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    s += `<line x1="${x.toFixed(2)}" y1="${(y+h).toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+  }
+
+  // === tic marks ===
+  const ticLen = fs * 0.4;
+  const minorTicLen = fs * 0.22;
+  // Y major tics (left and right)
+  for (const v of yMajorVals) {
+    const yc = yToCoord(v);
+    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+ticLen).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') {
+      s += `<line x1="${(x+w-ticLen).toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    }
+  }
+  // Y minor tics
+  for (const v of yMinorVals) {
+    if (v < yMin - eps || v > yMax + eps) continue;
+    const yc = yToCoord(v);
+    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+minorTicLen).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') {
+      s += `<line x1="${(x+w-minorTicLen).toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    }
+  }
+  // X major tics (top and bottom)
+  for (const o of xMajorVals) {
+    const xc = xToCoord(o.v);
+    s += `<line x1="${xc.toFixed(2)}" y1="${(y+h-ticLen).toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') {
+      s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+ticLen).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    }
+  }
+  // X minor tics
+  for (const v of xMinorVals) {
+    const xc = xToCoord(v);
+    s += `<line x1="${xc.toFixed(2)}" y1="${(y+h-minorTicLen).toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') {
+      s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+minorTicLen).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    }
+  }
+
+  // === tic labels ===
+  // Y labels
+  for (const v of yMajorVals) {
+    const yc = yToCoord(v);
+    s += `<text x="${(x - fs*0.4).toFixed(2)}" y="${(yc + fs*0.35).toFixed(2)}" text-anchor="end">${xmlEscape(fmtNum(v))}</text>\n`;
+  }
+  // X labels
+  if (showXLabels) {
+    for (const o of xMajorVals) {
+      const xc = xToCoord(o.v);
+      let label;
+      if (c.freqNotation === 'sci') {
+        label = `<tspan>10</tspan><tspan baseline-shift="super" font-size="${(fs*0.7).toFixed(2)}">${o.d}</tspan>`;
+      } else {
+        label = xmlEscape(fmtNum(o.v));
+      }
+      s += `<text x="${xc.toFixed(2)}" y="${(y + h + fs*1.3).toFixed(2)}" text-anchor="middle">${label}</text>\n`;
+    }
+  }
+
+  // === axis labels ===
+  const ylx = x - fs*3.2;
+  const yly = y + h/2;
+  s += `<text x="${ylx.toFixed(2)}" y="${yly.toFixed(2)}" transform="rotate(-90 ${ylx.toFixed(2)} ${yly.toFixed(2)})" text-anchor="middle">${xmlEscape(yLabel)}</text>\n`;
+  if (showXLabels && xLabel) {
+    s += `<text x="${(x + w/2).toFixed(2)}" y="${(y + h + fs*2.8).toFixed(2)}" text-anchor="middle">${xmlEscape(xLabel)}</text>\n`;
+  }
+  return s;
+}
+
+function update() {
+  try {
+    const svg = buildSVG();
+    $('preview').innerHTML = svg;
+  } catch (e) {
+    $('preview').innerHTML = '<p style="color:#c00;">Error: ' + xmlEscape(e.message) + '</p>';
+  }
+}
+
+function download() {
+  let svg;
+  try { svg = buildSVG(); } catch (e) { alert('生成エラー: ' + e.message); return; }
+  const c = cfg();
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bode_blank_gain${c.gainMin}to${c.gainMax}dB_phase${c.phaseMin}to${c.phaseMax}deg_freq${c.freqMin}to${c.freqMax}_${c.widthCm}x${c.heightCm}cm.svg`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', update);
+  el.addEventListener('change', update);
+});
+$('downloadBtn').addEventListener('click', download);
+update();
+</script>
+</body>
+</html>

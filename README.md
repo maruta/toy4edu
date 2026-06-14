@@ -16,6 +16,13 @@ Teaching materials for control engineering education that run in web browsers
   Use [Ctrl]/[Shift]/[Alt] keys to fix damping ratio / real part / imgainary part of poles.
 4. [Rocket](https://maruta.github.io/toy4edu/rocket/index.html)
 
+## Tools
+
+Utilities for preparing teaching materials.
+
+* [Blank Bode Plot Generator](https://maruta.github.io/toy4edu/tools/bode_template/index.html)  
+  Generate printable blank Bode plot templates (SVG) with configurable axes, size, and fonts.
+
 ### Source
 
  * [https://github.com/maruta/toy4edu/](https://github.com/maruta/toy4edu/)
