@@ -223,6 +223,71 @@ sim.load = function (d) {
     updateController(d, true);
 };
 
+// ---------------- 講評ステップバー ----------------
+// sim.steps([{label, run}, ...]) で画面下部にステップボタンの列を表示する。
+// クリックまたは PageDown/PageUp (プレゼンリモコン) で順に実行できる。
+
+let simSteps = null;
+let simStepIdx = -1;
+
+sim.steps = function (steps, opts) {
+    simSteps = steps;
+    simStepIdx = -1;
+    const bar = document.getElementById('script-steps');
+    bar.innerHTML = '';
+    steps.forEach(function (s, i) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn-sm btn-outline-light step-btn';
+        b.textContent = (i + 1) + ' ' + s.label;
+        b.title = 'PageUp/PageDownキーでも前後に移動できます';
+        b.onclick = function () {
+            sim.runStep(i);
+        };
+        bar.appendChild(b);
+    });
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'btn btn-sm btn-outline-secondary';
+    close.textContent = '×';
+    close.onclick = function () {
+        $('#script-steps').addClass('d-none');
+    };
+    bar.appendChild(close);
+    $('#script-steps').removeClass('d-none');
+    if (!opts || opts.autorun !== false) {
+        sim.runStep(0);
+    }
+};
+
+sim.runStep = function (i) {
+    if (!simSteps || i < 0 || i >= simSteps.length) return;
+    try {
+        simSteps[i].run();
+    } catch (e) {
+        console.error(e);
+        openScriptPanel();
+        setScriptStatus('step ' + (i + 1) + ': ' + e.toString(), true);
+        return;
+    }
+    simStepIdx = i;
+    $('#script-steps .step-btn').removeClass('active btn-light').addClass('btn-outline-light');
+    $('#script-steps .step-btn').eq(i).removeClass('btn-outline-light').addClass('active btn-light');
+};
+
+document.addEventListener('keydown', function (e) {
+    if (!simSteps || $('#script-steps').hasClass('d-none')) return;
+    const ae = document.activeElement;
+    if (ae && (ae.type === 'textarea' || ae.type === 'text')) return;
+    if (e.key === 'PageDown') {
+        sim.runStep(simStepIdx + 1);
+        e.preventDefault();
+    } else if (e.key === 'PageUp') {
+        sim.runStep(simStepIdx - 1);
+        e.preventDefault();
+    }
+});
+
 // ---------------- スクリプトパネル ----------------
 
 let scriptEditor = null;

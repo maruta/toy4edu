@@ -185,6 +185,28 @@ input[type='text'] {
   min-height: 0;
 }
 
+/* 講評ステップバー (sim.steps() で表示。全画面時も画面下部に出る) */
+#script-steps {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 95%;
+  background: rgba(20, 24, 28, 0.75);
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+#script-steps .step-btn {
+  white-space: nowrap;
+}
+
 #script-editor .CodeMirror {
   height: 100%;
   font-size: 13px;
