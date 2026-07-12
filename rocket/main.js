@@ -529,40 +529,21 @@ function mass_step_x(width){
 
 function shake(v, w){
     let width = (w === undefined) ? Number($('#field-debug-amount').val()) : w
-    let t0 = t + 10
+    let t0 = t
     shakeAxis = v
     omega = 2*Math.PI/10
     if (v === 'x') {
         rgen = function(){
-            //omega = 0.5
-            if(t<t0){
-                omega = 0
-                rx = 0
-                rvx = 0
-            }else{
-                omega = 0.2+(t-t0)*(t-t0)*4e-5
-//                omega = 0.2+(t-t0)*(t-t0)*8e-5
-                rx = width*(1 - Math.cos(omega*(t-t0)))/2
-                rvx = width * omega * Math.sin(omega*(t-t0))/2
-            }
-            // let vel = 2
-            // let ph = (t-t0)<5 ?  0 : (t-t0-5)/2/(width/vel) % 1;
-            // if(ph<0.5){
-            //     rvx = 1
-            //     rx = ph*2*width
-            // }else{
-            //     rvx = -1
-            //     rx = (1 - ph)*width*2
-            // }
-            // rx = width*(1 - Math.sign(Math.cos(omega*(t-t0))))/2
-            // rvx = 0
-        }        
+            omega = 0.2+(t-t0)*(t-t0)*4e-5
+            rx = width*(1 - Math.cos(omega*(t-t0)))/2
+            rvx = width * omega * Math.sin(omega*(t-t0))/2
+        }
     } else {
         rgen = function(){
             omega = 0.1+(t-t0)*(t-t0)*8e-5
             ry = width*(1 - Math.cos(omega*(t-t0)))/2
             rvy = width * omega * Math.sin(omega*(t-t0))/2
-        }        
+        }
     }
 }
 
