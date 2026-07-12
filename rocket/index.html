@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="../lib/katex/katex.min.css">
     <link href="../lib/open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
     <script src="../lib/katex/katex.min.js"></script>
+    <link rel="stylesheet" href="../lib/codemirror/codemirror.min.css">
+    <link rel="stylesheet" href="../lib/codemirror/material-darker.min.css">
     <link href="rocket.css" rel="stylesheet">
 </head>
 
@@ -289,6 +291,9 @@
                         <button type="button" class="btn btn-primary mb-2 mr-2" onclick="btn_spawn()">
                             spawn
                         </button>
+                        <button type="button" class="btn btn-secondary mb-2 mr-2" id="btn-script" onclick="toggleScriptPanel()">
+                            script
+                        </button>
                         <button type="button" class="btn btn-outline-dark mb-2 mr-2" id="btn-full" onclick="full_screen()">
                             <span class="oi oi-fullscreen-enter"></span>
                         </button>
@@ -306,6 +311,27 @@
                     <div class="about d-none d-xl-block">
                         TOYS FOR CONTROL EDUCATION #4 ROCKET<br> by Ichiro Maruta
                     </div>
+                </div>
+                <div id="script-panel" class="d-none">
+                    <div id="script-toolbar">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="runScript()" title="Ctrl+Enter">Run ▶</button>
+                        <select id="script-preset" class="form-control form-control-sm" style="width:auto" title="スニペットを挿入">
+                            <option value="">insert…</option>
+                            <option value="massY">y追従テスト整列 massSpawnY</option>
+                            <option value="massXw">x整列(交差周波数順) massSpawnX</option>
+                            <option value="massXpm">x整列(位相余裕順) massSpawnX</option>
+                            <option value="shakeY">目標値加振 y (shake)</option>
+                            <option value="shakeX">目標値加振 x (shake)</option>
+                            <option value="rampX">ランプ目標値 x (ramp)</option>
+                            <option value="spawn1">spawn 1機</option>
+                            <option value="clearAll">全機消去 (clear)</option>
+                            <option value="resetRef">目標値リセット (resetRef)</option>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-success" onclick="scriptShareUrl()" title="コードを埋め込んだURLをコピー">Share URL</button>
+                        <span id="script-status"></span>
+                        <button type="button" class="btn btn-sm btn-outline-light" onclick="closeScriptPanel()">×</button>
+                    </div>
+                    <div id="script-editor"></div>
                 </div>
             </div>
         </div>
@@ -336,11 +362,15 @@
         <script src="../lib/durand-kerner/roots.js"></script>
         <script src="../lib/js-deflate/rawdeflate.js"></script>
         <script src="../lib/js-deflate/rawinflate.js"></script>
+        <script src="../lib/codemirror/codemirror.min.js"></script>
+        <script src="../lib/codemirror/javascript.min.js"></script>
         <script src="./bode.js"></script>
         <script src="./rocket.js"></script>
         <script src="./ltisys.js"></script>
         <script src="./utils.js"></script>
+        <script src="./margins.js"></script>
         <script src="./main.js"></script>
+        <script src="./sim_api.js"></script>
         <script>
         </script>
 </body>

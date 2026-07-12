@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Root Locus from Transfer Function</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjs@13.2.0/lib/browser/math.js"></script>
+<script>
+// MathJax -> SVG output so math is embedded as real vector paths (self-contained, viewer-independent).
+window.MathJax = { svg: { fontCache: 'none' }, startup: { typeset: false } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif; margin: 0; padding: 16px; background: #f5f5f5; color: #222; }
+h1 { margin: 0 0 12px; font-size: 1.25em; }
+.container { display: grid; grid-template-columns: 360px 1fr; gap: 16px; }
+@media (max-width: 920px) { .container { grid-template-columns: 1fr; } }
+.panel { background: white; padding: 12px; border-radius: 6px; border: 1px solid #ddd; }
+fieldset { margin: 0 0 8px; padding: 6px 10px 8px; border: 1px solid #ccc; border-radius: 4px; }
+legend { padding: 0 4px; font-weight: bold; font-size: 0.9em; color: #444; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+label { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; margin: 2px 0; gap: 6px; }
+input[type="number"], input[type="text"], select { width: 110px; padding: 2px 4px; font-size: 0.9em; box-sizing: border-box; }
+input[type="checkbox"] { width: auto; }
+input[type="color"] { width: 110px; padding: 0; height: 22px; }
+#tf { width: 100%; padding: 6px 8px; font-size: 1.05em; font-family: "Consolas", "Menlo", monospace; box-sizing: border-box; }
+.tfrow { display: flex; align-items: baseline; gap: 6px; }
+.tfrow .lhs { font-style: italic; font-size: 1.05em; white-space: nowrap; }
+button { padding: 9px 16px; font-size: 1em; cursor: pointer; background: #2196f3; color: white; border: none; border-radius: 4px; width: 100%; margin-top: 6px; }
+button:hover { background: #1976d2; }
+.preset { background: #eee; color: #333; padding: 4px 8px; font-size: 0.8em; width: auto; margin: 2px 4px 2px 0; display: inline-block; }
+.preset:hover { background: #ddd; }
+#preview { background: white; padding: 10px; border: 1px solid #eee; text-align: center; overflow: auto; min-height: 200px; }
+#preview svg { max-width: 100%; height: auto; display: inline-block; }
+#info { font-size: 0.9em; line-height: 1.9; margin-top: 10px; }
+#info .row { margin: 2px 0; }
+#info .k { color: #555; display: inline-block; min-width: 9em; }
+#err { color: #c00; font-size: 0.85em; margin: 6px 0 0; min-height: 1.2em; }
+.note { font-size: 0.78em; color: #666; margin: 6px 0 0; line-height: 1.4; }
+h3 { margin: 0 0 8px; font-size: 1em; }
+code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<h1>Root Locus from Transfer Function</h1>
+<div class="container">
+  <div class="panel">
+    <fieldset>
+      <legend>Open-loop transfer function L(s)</legend>
+      <div class="tfrow">
+        <span class="lhs">L(s) =</span>
+        <input type="text" id="tf" value="1 / (s*(s+1)*(s+2))" spellcheck="false">
+      </div>
+      <div id="err"></div>
+      <p class="note">Rational expression in <code>s</code> (parsed by
+        <a href="https://mathjs.org/" target="_blank" rel="noopener">math.js</a>).
+        The root locus traces the closed-loop poles of
+        <code>1 + K&middot;L(s) = 0</code> as the gain <code>K</code> goes 0&rarr;&infin;.</p>
+      <div>
+        <button class="preset" data-tf="1 / (s*(s+1)*(s+2))">3 poles</button>
+        <button class="preset" data-tf="1 / (s^2 + 2*s + 3)">complex pair</button>
+        <button class="preset" data-tf="(s+2) / (s*(s+1))">with zero</button>
+        <button class="preset" data-tf="1 / (s*(s^2 + 2*s + 2))">4th order</button>
+        <button class="preset" data-tf="1 / (s*(s+4)*(s^2+4*s+8))">4 poles</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>View range (always equal scale)</legend>
+      <div class="grid2">
+        <label>Auto<input type="checkbox" id="rangeAuto" checked></label>
+        <label></label>
+        <label>Re min<input type="number" id="reMin" value="-3" step="0.5"></label>
+        <label>Re max<input type="number" id="reMax" value="1" step="0.5"></label>
+        <label>Im min<input type="number" id="imMin" value="-2" step="0.5"></label>
+        <label>Im max<input type="number" id="imMax" value="2" step="0.5"></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Appearance</legend>
+      <div class="grid2">
+        <label>Width [cm]<input type="number" id="widthCm" value="14" step="0.5" min="4"></label>
+        <label>Height [cm]<input type="number" id="heightCm" value="14" step="0.5" min="4"></label>
+        <label>Font [pt]<input type="number" id="fontSize" value="11" step="0.5" min="4"></label>
+        <label>Font family<input type="text" id="fontFamily" value="Times New Roman"></label>
+        <label>Locus width [pt]<input type="number" id="curveLw" value="1.4" step="0.1" min="0.2"></label>
+        <label>Locus color<input type="color" id="curveColor" value="#d00000"></label>
+        <label>Marker size [pt]<input type="number" id="markSize" value="4" step="0.5" min="1"></label>
+        <label>Resolution<input type="number" id="nK" value="1500" step="100" min="200"></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Annotations</legend>
+      <div class="grid2">
+        <label>Asymptotes<input type="checkbox" id="showAsym" checked></label>
+        <label>Coordinate labels<input type="checkbox" id="showLabels" checked></label>
+        <label>Direction arrows<input type="checkbox" id="showArrows" checked></label>
+        <label>Breakaway points<input type="checkbox" id="showBreak" checked></label>
+        <label>Breakaway sig. figs<input type="number" id="breakSig" value="4" min="1" max="12" step="1"></label>
+      </div>
+    </fieldset>
+    <button id="downloadBtn">Download SVG</button>
+    <p class="note">SVG user units are 1 unit = 1 pt. Math labels are embedded as MathJax SVG (vector paths), so they are self-contained and display in any SVG viewer (browsers, Inkscape, Illustrator, LaTeX).</p>
+  </div>
+  <div class="panel">
+    <h3>Root locus</h3>
+    <div id="preview"></div>
+    <div id="info"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const PT_PER_CM = 72 / 2.54;
+const $ = (id) => document.getElementById(id);
+
+/* ---------- complex helpers (plain {re,im}) ---------- */
+const cadd = (a,b) => ({re:a.re+b.re, im:a.im+b.im});
+const csub = (a,b) => ({re:a.re-b.re, im:a.im-b.im});
+const cmul = (a,b) => ({re:a.re*b.re-a.im*b.im, im:a.re*b.im+a.im*b.re});
+function cdiv(a,b){ const d=b.re*b.re+b.im*b.im; return {re:(a.re*b.re+a.im*b.im)/d, im:(a.im*b.re-a.re*b.im)/d}; }
+const cabs = (a) => Math.hypot(a.re,a.im);
+
+/* Durand-Kerner roots of polynomial with ascending real coefficients */
+function polyRoots(coefAsc){
+  let a = coefAsc.slice();
+  while (a.length > 1 && Math.abs(a[a.length-1]) < 1e-12) a.pop();
+  const n = a.length - 1;
+  if (n <= 0) return [];
+  const lead = a[n];
+  const m = a.map(v => v/lead);            // monic ascending
+  const roots = [];
+  const seed = {re:0.4, im:0.9};
+  let cur = {re:1, im:0};
+  for (let k=0;k<n;k++){ cur = cmul(cur, seed); roots.push({re:cur.re, im:cur.im}); }
+  for (let it=0; it<300; it++){
+    let maxd = 0;
+    for (let i=0;i<n;i++){
+      const p = polyEval(m, roots[i]);
+      let denom = {re:1, im:0};
+      for (let j=0;j<n;j++) if (j!==i) denom = cmul(denom, csub(roots[i], roots[j]));
+      const delta = cdiv(p, denom);
+      roots[i] = csub(roots[i], delta);
+      const d = cabs(delta);
+      if (d > maxd) maxd = d;
+    }
+    if (maxd < 1e-13) break;
+  }
+  return roots;
+}
+function polyEval(coefAsc, x){
+  let res = {re:0, im:0};
+  for (let i=coefAsc.length-1;i>=0;i--) res = cadd(cmul(res, x), {re:coefAsc[i], im:0});
+  return res;
+}
+/* real-coefficient polynomial utilities (ascending) */
+function polyDeriv(c){ if (c.length <= 1) return [0]; const r=[]; for (let i=1;i<c.length;i++) r.push(c[i]*i); return r; }
+function polyMul(a,b){ const r = new Array(a.length+b.length-1).fill(0); for (let i=0;i<a.length;i++) for (let j=0;j<b.length;j++) r[i+j]+=a[i]*b[j]; return r; }
+function polySub(a,b){ const n=Math.max(a.length,b.length); const r=new Array(n).fill(0); for (let i=0;i<n;i++) r[i]=(a[i]||0)-(b[i]||0); return r; }
+function realPolyEval(c,x){ let r=0; for (let i=c.length-1;i>=0;i--) r=r*x+c[i]; return r; }
+
+/* extract ascending polynomial coefficients of a math.js node */
+function polyCoeffs(node){
+  let r;
+  try { r = math.rationalize(node, {}, true); }
+  catch(e){ throw new Error('L(s) must be a ratio of polynomials in s'); }
+  if (r.variables) for (const v of r.variables) if (v !== 's') throw new Error('Only the variable s is allowed (found "'+v+'")');
+  let c = r.coefficients ? r.coefficients.slice() : null;
+  if (!c || !c.length) { c = [Number(node.evaluate())]; }
+  return c.map(Number);
+}
+
+/* split L(s) into numerator / denominator coefficient arrays (ascending) */
+function getNumDen(tf){
+  let node;
+  try { node = math.rationalize(tf); }
+  catch(e){ throw new Error('Cannot parse / rationalize L(s): ' + e.message); }
+  let numNode, denNode;
+  if (node.type === 'OperatorNode' && node.op === '/') { numNode = node.args[0]; denNode = node.args[1]; }
+  else { numNode = node; denNode = new math.ConstantNode(1); }
+  return { num: polyCoeffs(numNode), den: polyCoeffs(denNode) };
+}
+
+/* ---------- formatting to TeX ---------- */
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b,a%b]; } return a||1; }
+function radicalTeX(k){
+  let out=1, rad=k;
+  for (let f=2; f*f<=rad; f++) while (rad % (f*f) === 0) { out*=f; rad/=(f*f); }
+  if (rad === 1) return String(out);
+  return (out===1?'':out) + '\\sqrt{'+rad+'}';
+}
+function realTeX(x){
+  const tol = 2e-3;
+  if (Math.abs(x) < tol) return '0';
+  const sign = x < 0 ? '-' : '';
+  const a = Math.abs(x);
+  if (Math.abs(a - Math.round(a)) < tol) return sign + Math.round(a);
+  const sq = a*a, ks = Math.round(sq);
+  if (ks > 1 && Math.abs(sq - ks) < tol*3 && Math.sqrt(ks) % 1 !== 0) return sign + radicalTeX(ks);
+  for (let q=2;q<=12;q++){ const p = a*q; if (Math.abs(p - Math.round(p)) < tol*q){ const pp=Math.round(p), g=gcd(pp,q); return sign + '\\frac{'+(pp/g)+'}{'+(q/g)+'}'; } }
+  // radical over integer, e.g. sqrt(3)/2
+  for (let q=2;q<=6;q++){ const aq = a*q, kq = Math.round(aq*aq); if (kq > 1 && Math.abs(aq*aq - kq) < tol*4 && Math.sqrt(kq) % 1 !== 0){ const num = radicalTeX(kq); return sign + '\\frac{'+num+'}{'+q+'}'; } }
+  return sign + (Math.round(a*1000)/1000);
+}
+function complexTeX(re, im){
+  const tol = 2e-3;
+  if (Math.abs(im) < tol) return realTeX(re);
+  const reZero = Math.abs(re) < tol;
+  const imAbs = realTeX(Math.abs(im));
+  const imPart = (imAbs === '1') ? 'j' : imAbs + 'j';
+  if (reZero) return (im < 0 ? '-' : '') + imPart;
+  return realTeX(re) + (im < 0 ? '-' : '+') + imPart;
+}
+/* Render TeX to a MathJax SVG element (glyphs as vector paths, fontCache:'none' => self-contained). */
+function mjSVG(tex){
+  const node = MathJax.tex2svg(tex);
+  return node.querySelector('svg');
+}
+/* inline HTML (for the info panel) */
+function mjInline(tex){
+  try { return MathJax.tex2svg(tex).outerHTML; }
+  catch(e){ return tex; }
+}
+
+function xmlEscape(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function cfg(){
+  return {
+    tf: $('tf').value,
+    rangeAuto: $('rangeAuto').checked,
+    reMin: parseFloat($('reMin').value), reMax: parseFloat($('reMax').value),
+    imMin: parseFloat($('imMin').value), imMax: parseFloat($('imMax').value),
+    widthCm: parseFloat($('widthCm').value), heightCm: parseFloat($('heightCm').value),
+    fontSize: parseFloat($('fontSize').value), fontFamily: $('fontFamily').value,
+    curveLw: parseFloat($('curveLw').value), curveColor: $('curveColor').value,
+    markSize: parseFloat($('markSize').value),
+    nK: Math.max(200, parseInt($('nK').value) || 1500),
+    showAsym: $('showAsym').checked, showLabels: $('showLabels').checked, showArrows: $('showArrows').checked,
+    showBreak: $('showBreak').checked,
+    breakSig: Math.min(12, Math.max(1, parseInt($('breakSig').value) || 4)),
+  };
+}
+
+/* ---------- root locus computation ---------- */
+function computeLocus(c){
+  const { num, den } = getNumDen(c.tf);
+  const poles = polyRoots(den);
+  const zeros = polyRoots(num);
+  const n = poles.length, m = zeros.length;
+  if (n === 0) throw new Error('Denominator has no poles');
+
+  // characteristic polynomial coefficients: den + K*num  (ascending, padded)
+  const deg = Math.max(num.length, den.length);
+  const dC = den.concat(Array(deg - den.length).fill(0));
+  const nC = num.concat(Array(deg - num.length).fill(0));
+  const nBranch = Math.max(n, m);
+
+  // K samples 0 -> infinity via K = t/(1-t)
+  const Ks = [0];
+  for (let i=1;i<c.nK;i++){ const t = i/c.nK * 0.9997; Ks.push(t/(1-t)); }
+  Ks.push(1e5, 1e6, 1e8);
+
+  // branches via nearest-neighbour matching
+  let prev = poles.map(p => ({...p}));
+  while (prev.length < nBranch) prev.push({re: 1e6, im: 0});
+  const branches = prev.map(p => [{...p}]);
+  for (let s=1;s<Ks.length;s++){
+    const K = Ks[s];
+    const coef = dC.map((d,i) => d + K*nC[i]);
+    let cur = polyRoots(coef);
+    while (cur.length < nBranch) cur.push({re: 1e6, im: 0});
+    const used = new Array(cur.length).fill(false);
+    const ordered = new Array(prev.length);
+    for (let i=0;i<prev.length;i++){
+      let best=-1, bd=Infinity;
+      for (let j=0;j<cur.length;j++){ if(used[j])continue; const d=Math.hypot(prev[i].re-cur[j].re, prev[i].im-cur[j].im); if(d<bd){bd=d;best=j;} }
+      used[best]=true; ordered[i]=cur[best]; branches[i].push(cur[best]);
+    }
+    prev = ordered;
+  }
+
+  // asymptotes
+  const na = n - m;
+  let sigma = NaN, angles = [];
+  if (na > 0){
+    let sp=0, sz=0;
+    poles.forEach(p => sp += p.re);
+    zeros.forEach(z => sz += z.re);
+    sigma = (sp - sz) / na;
+    for (let k=0;k<na;k++){
+      let deg2 = (2*k+1)*180/na;
+      deg2 = ((deg2 + 180) % 360) - 180;  // normalize to (-180,180]
+      if (deg2 <= -180) deg2 += 360;
+      if (Math.abs(Math.abs(deg2) - 180) < 1e-6) continue;  // omit the negative-real-axis asymptote
+      angles.push(deg2);
+    }
+  }
+  // breakaway / break-in points on the real axis:
+  // roots of N*D' - D*N' = 0 that correspond to a real point with gain K = -D/N > 0
+  const P = polySub(polyMul(num, polyDeriv(den)), polyMul(den, polyDeriv(num)));
+  let Pt = P.slice(); while (Pt.length > 1 && Math.abs(Pt[Pt.length-1]) < 1e-12) Pt.pop();
+  const breakDeg = Pt.length - 1;
+  const broots = breakDeg >= 1 ? polyRoots(P) : [];
+  const breakaways = [];
+  for (const r of broots){
+    if (Math.abs(r.im) > 1e-4) continue;                 // real points only
+    const sb = r.re;
+    const Nv = realPolyEval(num, sb);
+    if (Math.abs(Nv) < 1e-12) continue;
+    const K = -realPolyEval(den, sb) / Nv;
+    if (K > 1e-9 && !breakaways.some(b => Math.abs(b - sb) < 1e-4)) breakaways.push(sb);
+  }
+  return { poles, zeros, branches, na, sigma, angles, breakaways, breakDeg, num, den };
+}
+
+/* ---------- SVG building ---------- */
+function buildSVG(forDL){
+  const c = cfg();
+  const L = computeLocus(c);
+
+  const W = c.widthCm * PT_PER_CM, H = c.heightCm * PT_PER_CM, fs = c.fontSize;
+  const mar = fs * 2.2;
+  const px0 = mar, py0 = mar, plotW = W - 2*mar, plotH = H - 2*mar;
+  if (plotW <= 0 || plotH <= 0) throw new Error('Plot size too small');
+
+  // determine data bounds
+  let xmin=0, xmax=0, ymin=0, ymax=0;
+  const inc = (re,im) => { if(re<xmin)xmin=re; if(re>xmax)xmax=re; if(im<ymin)ymin=im; if(im>ymax)ymax=im; };
+  if (c.rangeAuto){
+    L.poles.forEach(p=>inc(p.re,p.im));
+    L.zeros.forEach(z=>inc(z.re,z.im));
+    if (L.na>0) inc(L.sigma,0);
+    const feats = L.poles.concat(L.zeros);
+    const featR = Math.max(1, ...feats.map(p=>Math.hypot(p.re,p.im)));
+    const lim = featR*2.5;
+    for (const br of L.branches) for (const p of br) if (Math.hypot(p.re,p.im) <= lim) inc(p.re,p.im);
+    let dx=(xmax-xmin)||2, dy=(ymax-ymin)||2;
+    xmin-=0.18*dx; xmax+=0.18*dx; ymin-=0.18*dy; ymax+=0.18*dy;
+  } else {
+    xmin=c.reMin; xmax=c.reMax; ymin=c.imMin; ymax=c.imMax;
+    if (xmin>=xmax || ymin>=ymax) throw new Error('Invalid view range');
+  }
+
+  // equal-aspect mapping (letterbox to fit)
+  const dataW = xmax-xmin, dataH = ymax-ymin;
+  const scale = Math.min(plotW/dataW, plotH/dataH);
+  const cxD=(xmin+xmax)/2, cyD=(ymin+ymax)/2;
+  const cxP = px0 + plotW/2, cyP = py0 + plotH/2;
+  const TX = re => cxP + (re - cxD)*scale;
+  const TY = im => cyP - (im - cyD)*scale;
+
+  const ms = c.markSize;
+  let s = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+  s += `<svg xmlns="http://www.w3.org/2000/svg" width="${c.widthCm}cm" height="${c.heightCm}cm" viewBox="0 0 ${W.toFixed(2)} ${H.toFixed(2)}" font-family="${xmlEscape(c.fontFamily)}, serif" font-size="${fs}">\n`;
+  s += `<clipPath id="plotclip"><rect x="${px0.toFixed(2)}" y="${py0.toFixed(2)}" width="${plotW.toFixed(2)}" height="${plotH.toFixed(2)}"/></clipPath>\n`;
+
+  // ---- coordinate axes as arrows (through origin) ----
+  const x0 = TX(0), y0 = TY(0);
+  const aw = fs*0.9, ah = fs*0.6;
+  const axInRange = x0 >= px0 && x0 <= px0+plotW;
+  const ayInRange = y0 >= py0 && y0 <= py0+plotH;
+  if (ayInRange){ // real axis (horizontal)
+    const xR = px0+plotW;
+    s += `<line x1="${px0.toFixed(2)}" y1="${y0.toFixed(2)}" x2="${xR.toFixed(2)}" y2="${y0.toFixed(2)}" stroke="black" stroke-width="0.8"/>\n`;
+    s += `<path d="M${xR.toFixed(2)},${y0.toFixed(2)} L${(xR-aw).toFixed(2)},${(y0-ah/2).toFixed(2)} L${(xR-aw).toFixed(2)},${(y0+ah/2).toFixed(2)} Z" fill="black"/>\n`;
+    s += `<text x="${(xR-fs*0.4).toFixed(2)}" y="${(y0-fs*0.5).toFixed(2)}" text-anchor="end" font-style="normal">Re</text>\n`;
+  }
+  if (axInRange){ // imaginary axis (vertical)
+    const yT = py0;
+    s += `<line x1="${x0.toFixed(2)}" y1="${(py0+plotH).toFixed(2)}" x2="${x0.toFixed(2)}" y2="${yT.toFixed(2)}" stroke="black" stroke-width="0.8"/>\n`;
+    s += `<path d="M${x0.toFixed(2)},${yT.toFixed(2)} L${(x0-ah/2).toFixed(2)},${(yT+aw).toFixed(2)} L${(x0+ah/2).toFixed(2)},${(yT+aw).toFixed(2)} Z" fill="black"/>\n`;
+    s += `<text x="${(x0+fs*0.5).toFixed(2)}" y="${(yT+fs*0.9).toFixed(2)}" font-style="normal">Im</text>\n`;
+  }
+
+  // ---- asymptotes (dashed) ----
+  function rayExit(px,py,dx,dy){
+    let t=Infinity;
+    if (dx>0) t=Math.min(t,(px0+plotW-px)/dx); else if (dx<0) t=Math.min(t,(px0-px)/dx);
+    if (dy>0) t=Math.min(t,(py0+plotH-py)/dy); else if (dy<0) t=Math.min(t,(py0-py)/dy);
+    return {x:px+dx*t, y:py+dy*t, t};
+  }
+  let fo = '';  // foreignObject labels collected (drawn last, above)
+  // coordinate labels keyed by position so coincident pole/zero/centroid collapse to one
+  const coordLabels = new Map();
+  function addCoordLabel(re, im, tex, isPZ){
+    const key = re.toFixed(3) + ',' + im.toFixed(3);
+    if (coordLabels.has(key)){ if (isPZ) coordLabels.get(key).isPZ = true; return; }
+    coordLabels.set(key, { re, im, tex, isPZ });
+  }
+  if (c.showAsym && L.na > 0 && isFinite(L.sigma)){
+    const sx = TX(L.sigma), sy = TY(0);
+    for (const deg of L.angles){
+      const th = deg*Math.PI/180;
+      const dx = Math.cos(th), dy = -Math.sin(th);
+      const e = rayExit(sx, sy, dx, dy);
+      s += `<line x1="${sx.toFixed(2)}" y1="${sy.toFixed(2)}" x2="${e.x.toFixed(2)}" y2="${e.y.toFixed(2)}" stroke="#888" stroke-width="0.7" stroke-dasharray="${(fs*0.5).toFixed(1)},${(fs*0.4).toFixed(1)}"/>\n`;
+      // angle label near exit
+      const lx = sx + dx*e.t*0.82, ly = sy + dy*e.t*0.82;
+      fo += labelSVG(lx, ly, complexAngleTeX(deg), fs, 'mid');
+    }
+    // centroid marker + coordinate label (deduped against poles/zeros)
+    s += `<circle cx="${sx.toFixed(2)}" cy="${sy.toFixed(2)}" r="${(ms*0.45).toFixed(2)}" fill="#888"/>\n`;
+    if (c.showLabels) addCoordLabel(L.sigma, 0, realTeX(L.sigma), false);
+  }
+
+  // ---- locus curves ----
+  const breakThresh = 0.45*Math.max(plotW, plotH);
+  let pathAll = '';
+  for (const br of L.branches){
+    let pen = false, prevx=0, prevy=0;
+    for (const p of br){
+      const X = TX(p.re), Y = TY(p.im);
+      if (pen && Math.hypot(X-prevx, Y-prevy) > breakThresh) pen = false;
+      pathAll += (pen ? 'L' : 'M') + X.toFixed(2) + ',' + Y.toFixed(2) + ' ';
+      pen = true; prevx=X; prevy=Y;
+    }
+  }
+  s += `<path d="${pathAll.trim()}" fill="none" stroke="${xmlEscape(c.curveColor)}" stroke-width="${c.curveLw}" stroke-linejoin="round" clip-path="url(#plotclip)"/>\n`;
+
+  // ---- direction-of-travel arrowheads (increasing K) ----
+  if (c.showArrows){
+    const aLen = fs*0.9 + c.curveLw*1.5, aWid = fs*0.62 + c.curveLw;
+    for (const br of L.branches){
+      const idx = [];
+      for (let i=0;i<br.length;i++){ const X=TX(br[i].re), Y=TY(br[i].im); if (X>=px0 && X<=px0+plotW && Y>=py0 && Y<=py0+plotH) idx.push(i); }
+      if (idx.length < 4) continue;
+      const i0 = idx[Math.floor(idx.length*0.42)];
+      const step = Math.max(1, Math.floor(br.length/300));
+      const i1 = Math.min(br.length-1, i0+step);
+      if (i1 <= i0) continue;
+      const X0=TX(br[i0].re), Y0=TY(br[i0].im), X1=TX(br[i1].re), Y1=TY(br[i1].im);
+      let ux=X1-X0, uy=Y1-Y0; const d=Math.hypot(ux,uy); if (d < 1e-6) continue; ux/=d; uy/=d;
+      s += arrowHead(X0, Y0, ux, uy, aLen, aWid, c.curveColor);
+    }
+  }
+
+  // ---- poles (x) and zeros (o) ----
+  for (const p of L.poles){
+    const X = TX(p.re), Y = TY(p.im);
+    s += `<line x1="${(X-ms).toFixed(2)}" y1="${(Y-ms).toFixed(2)}" x2="${(X+ms).toFixed(2)}" y2="${(Y+ms).toFixed(2)}" stroke="black" stroke-width="1.3"/>\n`;
+    s += `<line x1="${(X-ms).toFixed(2)}" y1="${(Y+ms).toFixed(2)}" x2="${(X+ms).toFixed(2)}" y2="${(Y-ms).toFixed(2)}" stroke="black" stroke-width="1.3"/>\n`;
+    if (c.showLabels) addCoordLabel(p.re, p.im, complexTeX(p.re,p.im), true);
+  }
+  for (const z of L.zeros){
+    const X = TX(z.re), Y = TY(z.im);
+    s += `<circle cx="${X.toFixed(2)}" cy="${Y.toFixed(2)}" r="${ms.toFixed(2)}" fill="white" stroke="black" stroke-width="1.3"/>\n`;
+    if (c.showLabels) addCoordLabel(z.re, z.im, complexTeX(z.re,z.im), true);
+  }
+
+  // ---- breakaway / break-in points on the real axis (filled squares) ----
+  if (c.showBreak){
+    const hs = ms*0.7;
+    const aLen = fs*0.9 + c.curveLw*1.5, aWid = fs*0.62 + c.curveLw;
+    const Kof = ss => -realPolyEval(L.den, ss) / realPolyEval(L.num, ss);
+    const off = fs*1.6 + hs, dData = off/scale;     // gap from the point in data units
+    for (const sb of L.breakaways){
+      const X = TX(sb), Y = TY(0);
+      s += `<rect x="${(X-hs).toFixed(2)}" y="${(Y-hs).toFixed(2)}" width="${(2*hs).toFixed(2)}" height="${(2*hs).toFixed(2)}" fill="black"/>\n`;
+      if (c.showLabels) addCoordLabel(sb, 0, breakTeX(sb, L.breakDeg, c.breakSig), true);
+      // direction arrowheads on both sides, pointing along increasing K
+      const h = Math.max(1e-4, dData*0.1);
+      for (const side of [-1, 1]){
+        const sSample = sb + side*dData;
+        if (Math.abs(realPolyEval(L.num, sSample)) < 1e-12) continue;
+        const dir = (Kof(sSample + h) - Kof(sSample - h)) > 0 ? 1 : -1;  // +real direction of increasing K
+        s += arrowHead(TX(sSample), Y, dir, 0, aLen, aWid, c.curveColor);
+      }
+    }
+  }
+
+  // emit deduped coordinate labels
+  for (const e of coordLabels.values()){
+    const X = TX(e.re), Y = TY(e.im);
+    if (e.isPZ) fo += poleZeroLabel(X, Y, e.tex, e.im, ms, fs);
+    else fo += labelSVG(X + ms*0.5, Y + ms*0.5 + fs*0.45, e.tex, fs, 'left');
+  }
+
+  s += fo;
+  s += '</svg>\n';
+  return { svg: s, locus: L };
+}
+
+function arrowHead(X, Y, ux, uy, len, wid, color){
+  const tx=X+ux*len/2, ty=Y+uy*len/2;          // tip (ahead, K-increasing)
+  const bx=X-ux*len/2, by=Y-uy*len/2;          // base center
+  const px=-uy, py=ux;                          // perpendicular
+  const b1x=bx+px*wid/2, b1y=by+py*wid/2;
+  const b2x=bx-px*wid/2, b2y=by-py*wid/2;
+  return `<path d="M${tx.toFixed(2)},${ty.toFixed(2)} L${b1x.toFixed(2)},${b1y.toFixed(2)} L${b2x.toFixed(2)},${b2y.toFixed(2)} Z" fill="${xmlEscape(color)}"/>\n`;
+}
+function decimalTeX(x, sig){ return String(parseFloat(x.toPrecision(sig || 4))); }
+function breakTeX(sb, deg, sig){
+  if (deg >= 3) return decimalTeX(sb, sig);          // cubic+ : always numeric
+  const t = realTeX(sb);
+  // keep exact forms (integer / sqrt / fraction); otherwise use sig-fig decimal
+  if (/\\sqrt|\\frac/.test(t) || /^-?\d+$/.test(t)) return t;
+  return decimalTeX(sb, sig);
+}
+function complexAngleTeX(deg){
+  const v = Math.round(deg*100)/100;
+  return (v>=0?'':'') + (Number.isInteger(v)?v:v) + '^\\circ';
+}
+// place a TeX label as an embedded MathJax SVG (vector paths). cx,cy is the vertical centre;
+// anchor 'left' starts at cx, 'mid' centres on cx. MathJax viewBox uses 1000 units per em.
+function labelSVG(cx, cy, tex, fs, anchor){
+  let el;
+  try { el = mjSVG(tex).cloneNode(true); } catch(e){ return ''; }
+  const vb = (el.getAttribute('viewBox') || '0 0 1000 1000').split(/\s+/).map(Number);
+  const physW = vb[2]/1000*fs, physH = vb[3]/1000*fs;
+  const x = anchor==='mid' ? cx - physW/2 : cx;
+  const y = cy - physH/2;
+  el.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  el.setAttribute('width', physW.toFixed(2));
+  el.setAttribute('height', physH.toFixed(2));
+  el.setAttribute('x', x.toFixed(2));
+  el.setAttribute('y', y.toFixed(2));
+  el.setAttribute('overflow', 'visible');
+  // bake glyph colour into the paths so it does not depend on currentColor support
+  return el.outerHTML.replace(/currentColor/g, '#000') + '\n';
+}
+function poleZeroLabel(X, Y, tex, im, ms, fs){
+  // lower-right of the marker (kept close to the point)
+  return labelSVG(X + ms*0.5, Y + ms*0.5 + fs*0.45, tex, fs, 'left');
+}
+
+/* ---------- info panel ---------- */
+function buildInfo(L, breakSig){
+  const wrap = (tex) => mjInline(tex);
+  const list = (arr) => arr.length ? arr.map(p => wrap(complexTeX(p.re,p.im))).join('<span style="margin:0 .4em;">,</span>') : '<span style="color:#888;">none</span>';
+  let html = '';
+  html += `<div class="row"><span class="k">Open-loop poles:</span> ${list(L.poles)}</div>`;
+  html += `<div class="row"><span class="k">Open-loop zeros:</span> ${list(L.zeros)}</div>`;
+  if (L.na > 0 && isFinite(L.sigma)){
+    html += `<div class="row"><span class="k">Asymptote centroid:</span> ${wrap(realTeX(L.sigma))}</div>`;
+    const angTeX = L.angles.map(d => wrap(complexAngleTeX(d))).join('<span style="margin:0 .4em;">,</span>');
+    html += `<div class="row"><span class="k">Asymptote angles:</span> ${angTeX}</div>`;
+  } else {
+    html += `<div class="row"><span class="k">Asymptotes:</span> <span style="color:#888;">none (#poles = #zeros)</span></div>`;
+  }
+  if (L.breakaways && L.breakaways.length){
+    const bs = L.breakaways.map(sb => wrap(breakTeX(sb, L.breakDeg, breakSig))).join('<span style="margin:0 .4em;">,</span>');
+    html += `<div class="row"><span class="k">Breakaway points:</span> ${bs}</div>`;
+  }
+  return html;
+}
+
+/* ---------- update / download ---------- */
+function update(){
+  try {
+    const { svg, locus } = buildSVG(false);
+    $('preview').innerHTML = svg;
+    $('info').innerHTML = buildInfo(locus, cfg().breakSig);
+    $('err').textContent = '';
+  } catch(e){
+    $('err').textContent = e.message;
+  }
+}
+function download(){
+  let res;
+  try { res = buildSVG(true); } catch(e){ alert('Error: ' + e.message); return; }
+  const blob = new Blob([res.svg], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'root_locus.svg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', update);
+  el.addEventListener('change', update);
+});
+document.querySelectorAll('.preset').forEach(b => {
+  b.addEventListener('click', () => { $('tf').value = b.dataset.tf; update(); });
+});
+$('downloadBtn').addEventListener('click', download);
+
+function waitReady(){
+  if (window.math && window.MathJax && MathJax.tex2svg) update();
+  else setTimeout(waitReady, 50);
+}
+waitReady();
+</script>
+</body>
+</html>

@@ -81,6 +81,7 @@ code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
         <label>Max<input type="number" id="phaseMax" value="0" step="45"></label>
         <label>Major step<input type="number" id="phaseTic" value="45" step="15" min="1"></label>
         <label>Minor divs<input type="number" id="phaseMtic" value="3" min="1" step="1"></label>
+        <label>ω=0 branch ×360°<input type="number" id="phaseBranch" value="0" step="1"></label>
       </div>
     </fieldset>
     <fieldset>
@@ -116,6 +117,7 @@ code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
       <div class="grid2">
         <label>Curve [pt]<input type="number" id="curveLw" value="1.4" step="0.1" min="0.2"></label>
         <label>Curve color<input type="color" id="curveColor" value="#1565c0" style="width:110px;padding:0;height:22px"></label>
+        <label>Axis/grid color<input type="color" id="inkColor" value="#000000" style="width:110px;padding:0;height:22px"></label>
         <label>Axis width [pt]<input type="number" id="axisLw" value="1.0" step="0.1" min="0.1"></label>
         <label>Major grid [pt]<input type="number" id="gridLw" value="0.5" step="0.1" min="0.1"></label>
         <label>Minor grid [pt]<input type="number" id="minorLw" value="0.25" step="0.05" min="0.05"></label>
@@ -172,6 +174,7 @@ function cfg() {
     phaseMax: parseFloat($('phaseMax').value),
     phaseTic: parseFloat($('phaseTic').value),
     phaseMtic: Math.max(1, parseInt($('phaseMtic').value) || 1),
+    phaseBranch: Math.round(parseFloat($('phaseBranch').value)) || 0,
     freqMin: parseFloat($('freqMin').value),
     freqMax: parseFloat($('freqMax').value),
     freqUnit: $('freqUnit').value,
@@ -182,6 +185,7 @@ function cfg() {
     fontFamily: $('fontFamily').value,
     curveLw: parseFloat($('curveLw').value),
     curveColor: $('curveColor').value,
+    inkColor: $('inkColor').value,
     axisLw: parseFloat($('axisLw').value),
     gridLw: parseFloat($('gridLw').value),
     minorLw: parseFloat($('minorLw').value),
@@ -239,6 +243,15 @@ function computeResponse(c) {
       while (d > 180) { ph[i] -= 360; d = ph[i] - ph[i-1]; }
       while (d < -180) { ph[i] += 360; d = ph[i] - ph[i-1]; }
     }
+    // Choose the phase branch so that the lowest-frequency (≈ DC) value lies in
+    // (-360, 0], then shift the whole curve rigidly by a multiple of 360 to keep
+    // it continuous. This favours the branch near -180 over the +180 one.
+    // phaseBranch lets the user move the DC point up/down by whole turns.
+    let off = 0;
+    while (ph[0] + off > 0) off -= 360;
+    while (ph[0] + off <= -360) off += 360;
+    off += c.phaseBranch * 360;
+    if (off !== 0) for (let i = 0; i < ph.length; i++) ph[i] += off;
   }
   return { w, mag, ph };
 }
@@ -284,7 +297,7 @@ function buildSVG() {
   if (plotW <= 0 || plotH <= 0) throw new Error('Plot size is too small');
 
   let svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
-  svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${c.widthCm}cm" height="${c.heightCm}cm" viewBox="0 0 ${W.toFixed(2)} ${H.toFixed(2)}" font-family="${xmlEscape(c.fontFamily)}, serif" font-size="${fs}">\n`;
+  svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${c.widthCm}cm" height="${c.heightCm}cm" viewBox="0 0 ${W.toFixed(2)} ${H.toFixed(2)}" font-family="${xmlEscape(c.fontFamily)}, serif" font-size="${fs}" fill="${xmlEscape(c.inkColor)}">\n`;
   svg += drawSubplot(c, mL, mT, plotW, plotH, gMin, gMax, c.gainTic, c.gainMtic, 'Gain [dB]', false, '',
                      resp ? resp.w : null, resp ? resp.mag : null);
   svg += drawSubplot(c, mL, mT + plotH + gap, plotW, plotH, pMin, pMax, c.phaseTic, c.phaseMtic, 'Phase [deg]', true, `Frequency [${c.freqUnit}]`,
@@ -335,22 +348,22 @@ function drawSubplot(c, x, y, w, h, yMin, yMax, yTic, yMtic, yLabel, showXLabels
     for (const v of yMinorVals) {
       if (v <= yMin + eps || v >= yMax - eps) continue;
       const yc = yToCoord(v);
-      s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.minorLw}"${minorDash}/>\n`;
+      s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.minorLw}"${minorDash}/>\n`;
     }
     for (const v of xMinorVals) {
       const xc = xToCoord(v);
-      s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.minorLw}"${minorDash}/>\n`;
+      s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.minorLw}"${minorDash}/>\n`;
     }
   }
   for (const v of yMajorVals) {
     if (v <= yMin + eps || v >= yMax - eps) continue;
     const yc = yToCoord(v);
-    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.gridLw}"${gridDash}/>\n`;
+    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.gridLw}"${gridDash}/>\n`;
   }
   for (const o of xMajorVals) {
     if (o.v <= xMin + 1e-12 || o.v >= xMax - 1e-12) continue;
     const xc = xToCoord(o.v);
-    s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.gridLw}"${gridDash}/>\n`;
+    s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.gridLw}"${gridDash}/>\n`;
   }
 
   // === data curve (clipped) ===
@@ -369,34 +382,34 @@ function drawSubplot(c, x, y, w, h, yMin, yMax, yTic, yMtic, yLabel, showXLabels
 
   // === border / axes ===
   if (c.boxStyle === 'box') {
-    s += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" fill="none" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    s += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" fill="none" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
   } else {
-    s += `<line x1="${x.toFixed(2)}" y1="${y.toFixed(2)}" x2="${x.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
-    s += `<line x1="${x.toFixed(2)}" y1="${(y+h).toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    s += `<line x1="${x.toFixed(2)}" y1="${y.toFixed(2)}" x2="${x.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
+    s += `<line x1="${x.toFixed(2)}" y1="${(y+h).toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
   }
 
   // === tic marks ===
   const ticLen = fs * 0.4, minorTicLen = fs * 0.22;
   for (const v of yMajorVals) {
     const yc = yToCoord(v);
-    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+ticLen).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
-    if (c.boxStyle === 'box') s += `<line x1="${(x+w-ticLen).toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+ticLen).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') s += `<line x1="${(x+w-ticLen).toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
   }
   for (const v of yMinorVals) {
     if (v < yMin - eps || v > yMax + eps) continue;
     const yc = yToCoord(v);
-    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+minorTicLen).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
-    if (c.boxStyle === 'box') s += `<line x1="${(x+w-minorTicLen).toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    s += `<line x1="${x.toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+minorTicLen).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') s += `<line x1="${(x+w-minorTicLen).toFixed(2)}" y1="${yc.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yc.toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
   }
   for (const o of xMajorVals) {
     const xc = xToCoord(o.v);
-    s += `<line x1="${xc.toFixed(2)}" y1="${(y+h-ticLen).toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
-    if (c.boxStyle === 'box') s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+ticLen).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    s += `<line x1="${xc.toFixed(2)}" y1="${(y+h-ticLen).toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+ticLen).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
   }
   for (const v of xMinorVals) {
     const xc = xToCoord(v);
-    s += `<line x1="${xc.toFixed(2)}" y1="${(y+h-minorTicLen).toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
-    if (c.boxStyle === 'box') s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+minorTicLen).toFixed(2)}" stroke="black" stroke-width="${c.axisLw}"/>\n`;
+    s += `<line x1="${xc.toFixed(2)}" y1="${(y+h-minorTicLen).toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
+    if (c.boxStyle === 'box') s += `<line x1="${xc.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xc.toFixed(2)}" y2="${(y+minorTicLen).toFixed(2)}" stroke="${c.inkColor}" stroke-width="${c.axisLw}"/>\n`;
   }
 
   // === tic labels ===
@@ -428,6 +441,27 @@ function syncEnabled() {
   $('tfBody').style.display = on ? '' : 'none';
 }
 
+// Save every control's state into the URL fragment (so the view can be
+// bookmarked / shared), and restore it on load.
+function serializeState() {
+  const params = new URLSearchParams();
+  document.querySelectorAll('input[id], select[id]').forEach(el => {
+    params.set(el.id, el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value);
+  });
+  history.replaceState(null, '', '#' + params.toString());
+}
+
+function restoreState() {
+  if (location.hash.length < 2) return;
+  const params = new URLSearchParams(location.hash.slice(1));
+  document.querySelectorAll('input[id], select[id]').forEach(el => {
+    if (!params.has(el.id)) return;
+    const v = params.get(el.id);
+    if (el.type === 'checkbox') el.checked = (v === '1');
+    else el.value = v;
+  });
+}
+
 function update() {
   syncEnabled();
   try {
@@ -437,6 +471,7 @@ function update() {
     if ($('plotTF').checked) $('err').textContent = e.message;
     else { $('err').textContent = ''; $('preview').innerHTML = '<p style="color:#c00;">Error: ' + xmlEscape(e.message) + '</p>'; }
   }
+  serializeState();
 }
 
 function download() {
@@ -462,6 +497,8 @@ document.querySelectorAll('.preset').forEach(b => {
   b.addEventListener('click', () => { $('tf').value = b.dataset.tf; update(); });
 });
 $('downloadBtn').addEventListener('click', download);
+
+restoreState();
 
 function waitForMath() {
   if (window.math) update();
